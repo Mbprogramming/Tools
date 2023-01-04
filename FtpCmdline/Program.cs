@@ -1,13 +1,21 @@
-﻿using System.Net;
-using System;
-using System.CommandLine;
-using System.IO;
+﻿using System.CommandLine;
 using FluentFTP;
 
 namespace FtpCmdline
 {
+    /// <summary>
+    /// Main program class
+    /// </summary>
     internal class Program
     {
+        /// <summary>
+        /// create and connect ftp client
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         private static async Task<AsyncFtpClient> GetClient(string host, string user, string pwd, bool log)
         {
             try
@@ -23,6 +31,14 @@ namespace FtpCmdline
             }
         }
 
+        /// <summary>
+        /// get ftp server infos
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         static async Task Info(string host, string user, string pwd, bool log)
         {
             try
@@ -38,6 +54,15 @@ namespace FtpCmdline
             }
         }
 
+        /// <summary>
+        /// list entries from path on server
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <param name="path"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         static async Task List(string host, string user, string pwd, string path, bool log)
         {
             try
@@ -56,6 +81,15 @@ namespace FtpCmdline
             }
         }
 
+        /// <summary>
+        /// delete file or directory on server
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <param name="path"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         static async Task Delete(string host, string user, string pwd, string path, bool log)
         {
             try
@@ -83,6 +117,16 @@ namespace FtpCmdline
             }
         }
 
+        /// <summary>
+        /// rename file or directory on server
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <param name="path"></param>
+        /// <param name="newName"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         static async Task Rename(string host, string user, string pwd, string path, string newName, bool log)
         {
             try
@@ -110,6 +154,16 @@ namespace FtpCmdline
             }
         }
 
+        /// <summary>
+        /// upload file or directory to server
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <param name="path"></param>
+        /// <param name="localPath"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         static async Task Upload(string host, string user, string pwd, string path, string localPath, bool log)
         {
             try
@@ -137,6 +191,14 @@ namespace FtpCmdline
             }
         }
 
+        /// <summary>
+        /// main entry point
+        /// </summary>
+        /// <remarks>
+        /// init options and commands
+        /// </remarks>
+        /// <param name="args"></param>
+        /// <returns></returns>
         static async Task<int> Main(string[] args)
         {
             var host = new Option<string>("--host", "The FTP host");
