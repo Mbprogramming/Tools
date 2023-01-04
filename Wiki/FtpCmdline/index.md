@@ -1,8 +1,6 @@
 # FtpCmdline
 
-## Code Documentation
-
-[Command Line Tool Entry Point](program.md)
+## [FtpCmdline Code Documentation](FtpCmdline.md)
 
 ## Usage 
 
