@@ -4,7 +4,7 @@ using FluentFTP;
 namespace FtpCmdline
 {
     /// <summary>
-    /// Main program class
+    /// Main program implementation class and entry point
     /// </summary>
     /// <remarks>
     /// complete implementation

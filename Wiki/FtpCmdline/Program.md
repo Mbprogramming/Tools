@@ -2,7 +2,7 @@
 
 ## Program Class
 
-Main program class
+Main program implementation class and entry point
 
 ```csharp
 internal class Program

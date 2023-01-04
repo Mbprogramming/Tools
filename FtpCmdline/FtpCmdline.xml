@@ -6,7 +6,7 @@
     <members>
         <member name="T:FtpCmdline.Program">
             <summary>
-            Main program class
+            Main program implementation class and entry point
             </summary>
             <remarks>
             complete implementation
