@@ -13,6 +13,9 @@
 		<DefaultDocumentationHome>FtpCmdline</DefaultDocumentationHome>
 		<DefaultDocumentationFileNameFactory>Name</DefaultDocumentationFileNameFactory>
 	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DisableDefaultDocumentation>true</DisableDefaultDocumentation>
+	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="DefaultDocumentation" Version="0.8.2">
 			<PrivateAssets>all</PrivateAssets>
