@@ -8,71 +8,80 @@
             <summary>
             Main program class
             </summary>
+            <remarks>
+            complete implementation
+            </remarks>
+        </member>
+        <member name="F:FtpCmdline.Program.returnCode">
+            <summary>
+            return code 0...success 1...error 2...file not found
+            </summary>
         </member>
         <member name="M:FtpCmdline.Program.GetClient(System.String,System.String,System.String,System.Boolean)">
             <summary>
             create and connect ftp client
             </summary>
-            <param name="host"></param>
-            <param name="user"></param>
-            <param name="pwd"></param>
-            <param name="log"></param>
-            <returns></returns>
+            <param name="host">ftp host</param>
+            <param name="user">ftp user</param>
+            <param name="pwd">ftp user password</param>
+            <param name="log">enable extended logging</param>
+            <returns>created async ftp client</returns>
+            <exception cref="T:System.Exception"></exception>
         </member>
         <member name="M:FtpCmdline.Program.Info(System.String,System.String,System.String,System.Boolean)">
             <summary>
             get ftp server infos
             </summary>
-            <param name="host"></param>
-            <param name="user"></param>
-            <param name="pwd"></param>
-            <param name="log"></param>
+            <param name="host">ftp host</param>
+            <param name="user">ftp user</param>
+            <param name="pwd">ftp user password</param>
+            <param name="log">enable extended logging</param>
             <returns></returns>
         </member>
         <member name="M:FtpCmdline.Program.List(System.String,System.String,System.String,System.String,System.Boolean)">
             <summary>
             list entries from path on server
             </summary>
-            <param name="host"></param>
-            <param name="user"></param>
-            <param name="pwd"></param>
-            <param name="path"></param>
-            <param name="log"></param>
+            <param name="host">ftp host</param>
+            <param name="user">ftp user</param>
+            <param name="pwd">ftp user password</param>
+            <param name="path">server path</param>
+            <param name="log">enable extended logging</param>
             <returns></returns>
         </member>
         <member name="M:FtpCmdline.Program.Delete(System.String,System.String,System.String,System.String,System.Boolean)">
             <summary>
             delete file or directory on server
             </summary>
-            <param name="host"></param>
-            <param name="user"></param>
-            <param name="pwd"></param>
-            <param name="path"></param>
-            <param name="log"></param>
+            <param name="host">ftp host</param>
+            <param name="user">ftp user</param>
+            <param name="pwd">ftp user password</param>
+            <param name="path">server path</param>
+            <param name="log">enable extended logging</param>
             <returns></returns>
         </member>
         <member name="M:FtpCmdline.Program.Rename(System.String,System.String,System.String,System.String,System.String,System.Boolean)">
             <summary>
             rename file or directory on server
             </summary>
-            <param name="host"></param>
-            <param name="user"></param>
-            <param name="pwd"></param>
-            <param name="path"></param>
-            <param name="newName"></param>
-            <param name="log"></param>
+            <param name="host">ftp host</param>
+            <param name="user">ftp user</param>
+            <param name="pwd">ftp user password</param>
+            <param name="path">server path</param>
+            <param name="newName">new server name/path</param>
+            <param name="log">enable extended logging</param>
             <returns></returns>
         </member>
         <member name="M:FtpCmdline.Program.Upload(System.String,System.String,System.String,System.String,System.String,System.Boolean)">
             <summary>
             upload file or directory to server
             </summary>
-            <param name="host"></param>
-            <param name="user"></param>
-            <param name="pwd"></param>
-            <param name="path"></param>
-            <param name="localPath"></param>
-            <param name="log"></param>
+            <param name="host">ftp host</param>
+            <param name="user">ftp user</param>
+            <param name="pwd">ftp user password</param>
+            <param name="path">server path</param>
+            <param name="localPath">local path</param>
+            <param name="log">enable extended logging</param>
             <returns></returns>
         </member>
         <member name="M:FtpCmdline.Program.Main(System.String[])">
@@ -82,7 +91,7 @@
             <remarks>
             init options and commands
             </remarks>
-            <param name="args"></param>
+            <param name="args">command line parameter</param>
             <returns></returns>
         </member>
     </members>

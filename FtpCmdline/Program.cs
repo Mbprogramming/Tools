@@ -6,17 +6,26 @@ namespace FtpCmdline
     /// <summary>
     /// Main program class
     /// </summary>
+    /// <remarks>
+    /// complete implementation
+    /// </remarks>
     internal class Program
     {
         /// <summary>
+        /// return code 0...success 1...error 2...file not found
+        /// </summary>
+        internal static int returnCode = 0;
+
+        /// <summary>
         /// create and connect ftp client
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="user"></param>
-        /// <param name="pwd"></param>
-        /// <param name="log"></param>
-        /// <returns></returns>
-        private static async Task<AsyncFtpClient> GetClient(string host, string user, string pwd, bool log)
+        /// <param name="host">ftp host</param>
+        /// <param name="user">ftp user</param>
+        /// <param name="pwd">ftp user password</param>
+        /// <param name="log">enable extended logging</param>
+        /// <returns>created async ftp client</returns>
+        /// <exception cref="System.Exception"></exception>
+        internal static async Task<AsyncFtpClient> GetClient(string host, string user, string pwd, bool log)
         {
             try
             {
@@ -34,10 +43,10 @@ namespace FtpCmdline
         /// <summary>
         /// get ftp server infos
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="user"></param>
-        /// <param name="pwd"></param>
-        /// <param name="log"></param>
+        /// <param name="host">ftp host</param>
+        /// <param name="user">ftp user</param>
+        /// <param name="pwd">ftp user password</param>
+        /// <param name="log">enable extended logging</param>
         /// <returns></returns>
         static async Task Info(string host, string user, string pwd, bool log)
         {
@@ -51,17 +60,22 @@ namespace FtpCmdline
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                if(ex.InnerException != null)
+                {
+                    Console.WriteLine(ex.InnerException.Message);
+                }
+                returnCode = 1;
             }
         }
 
         /// <summary>
         /// list entries from path on server
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="user"></param>
-        /// <param name="pwd"></param>
-        /// <param name="path"></param>
-        /// <param name="log"></param>
+        /// <param name="host">ftp host</param>
+        /// <param name="user">ftp user</param>
+        /// <param name="pwd">ftp user password</param>
+        /// <param name="path">server path</param>
+        /// <param name="log">enable extended logging</param>
         /// <returns></returns>
         static async Task List(string host, string user, string pwd, string path, bool log)
         {
@@ -78,17 +92,22 @@ namespace FtpCmdline
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine(ex.InnerException.Message);
+                }
+                returnCode = 1;
             }
         }
 
         /// <summary>
         /// delete file or directory on server
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="user"></param>
-        /// <param name="pwd"></param>
-        /// <param name="path"></param>
-        /// <param name="log"></param>
+        /// <param name="host">ftp host</param>
+        /// <param name="user">ftp user</param>
+        /// <param name="pwd">ftp user password</param>
+        /// <param name="path">server path</param>
+        /// <param name="log">enable extended logging</param>
         /// <returns></returns>
         static async Task Delete(string host, string user, string pwd, string path, bool log)
         {
@@ -108,24 +127,30 @@ namespace FtpCmdline
                 else
                 {
                     Console.WriteLine("File or Directory not exists");
+                    returnCode = 2;
                 }
                 await client.Disconnect();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine(ex.InnerException.Message);
+                }
+                returnCode = 1;
             }
         }
 
         /// <summary>
         /// rename file or directory on server
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="user"></param>
-        /// <param name="pwd"></param>
-        /// <param name="path"></param>
-        /// <param name="newName"></param>
-        /// <param name="log"></param>
+        /// <param name="host">ftp host</param>
+        /// <param name="user">ftp user</param>
+        /// <param name="pwd">ftp user password</param>
+        /// <param name="path">server path</param>
+        /// <param name="newName">new server name/path</param>
+        /// <param name="log">enable extended logging</param>
         /// <returns></returns>
         static async Task Rename(string host, string user, string pwd, string path, string newName, bool log)
         {
@@ -145,24 +170,30 @@ namespace FtpCmdline
                 else
                 {
                     Console.WriteLine("File or Directory not exists");
+                    returnCode = 2;
                 }
                 await client.Disconnect();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine(ex.InnerException.Message);
+                }
+                returnCode = 1;
             }
         }
 
         /// <summary>
         /// upload file or directory to server
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="user"></param>
-        /// <param name="pwd"></param>
-        /// <param name="path"></param>
-        /// <param name="localPath"></param>
-        /// <param name="log"></param>
+        /// <param name="host">ftp host</param>
+        /// <param name="user">ftp user</param>
+        /// <param name="pwd">ftp user password</param>
+        /// <param name="path">server path</param>
+        /// <param name="localPath">local path</param>
+        /// <param name="log">enable extended logging</param>
         /// <returns></returns>
         static async Task Upload(string host, string user, string pwd, string path, string localPath, bool log)
         {
@@ -182,12 +213,18 @@ namespace FtpCmdline
                 else
                 {
                     Console.WriteLine("File or Directory not exists");
+                    returnCode = 2;
                 }
                 await client.Disconnect();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine(ex.InnerException.Message);
+                }
+                returnCode = 1;
             }
         }
 
@@ -197,7 +234,7 @@ namespace FtpCmdline
         /// <remarks>
         /// init options and commands
         /// </remarks>
-        /// <param name="args"></param>
+        /// <param name="args">command line parameter</param>
         /// <returns></returns>
         static async Task<int> Main(string[] args)
         {
@@ -269,7 +306,8 @@ namespace FtpCmdline
             renameCommand.SetHandler(async (host, user, pwd, path, newPath, log) => await Rename(host, user, pwd, path, newPath, log), host, user, pwd, path, newPath, log);
             uploadCommand.SetHandler(async (host, user, pwd, path, localPath, log) => await Upload(host, user, pwd, path, localPath, log), host, user, pwd, path, localPath, log);
 
-            return await rootCommand.InvokeAsync(args);
+            await rootCommand.InvokeAsync(args);
+            return returnCode;
         }
     }
 }
