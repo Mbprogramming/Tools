@@ -33,3 +33,8 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+- task: GitVersion@5
+  inputs:
+    runtime: 'core'
+    updateAssemblyInfo: true
+    updateAssemblyInfoFilename: 'GlobalAssemblyInfo.cs'
