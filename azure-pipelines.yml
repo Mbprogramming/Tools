@@ -24,6 +24,12 @@ steps:
 - task: CmdLine@2
   inputs:
     script: |
+      choco install GitVersion.Portable
+      GitVersion.Portable
+
+- task: CmdLine@2
+  inputs:
+    script: |
       cd FtpCmdline
       dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:EnableCompressionInSingleFile=true
       
