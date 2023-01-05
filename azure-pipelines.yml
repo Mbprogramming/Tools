@@ -31,6 +31,7 @@ steps:
   inputs:
     script: |
       cd FtpCmdline
+      dir
       dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:EnableCompressionInSingleFile=true
       dir
       type GlobalAssemblyInfo.cs
