@@ -21,10 +21,6 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-- task: GitVersion@5
-  inputs:
-    runtime: 'full'
-    
 - task: CmdLine@2
   inputs:
     script: |
