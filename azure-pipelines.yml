@@ -25,6 +25,7 @@ steps:
   inputs:
     script: |
       choco install GitVersion.Portable
+      git fetch -unshallow
       GitVersion
 
 - task: CmdLine@2
