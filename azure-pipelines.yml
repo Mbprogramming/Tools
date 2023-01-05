@@ -21,6 +21,14 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: 'FtpCmdline.csproj'
+    arguments: '/p:PublishProfile=FolderProfile.pubxml'
+    workingDirectory: 'FtpCmdline'
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
@@ -32,9 +40,3 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-
-- task: GitVersion@5
-  inputs:
-    runtime: 'core'
-    updateAssemblyInfo: true
-    updateAssemblyInfoFilename: 'GlobalAssemblyInfo.cs'
