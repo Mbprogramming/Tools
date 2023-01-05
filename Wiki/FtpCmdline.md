@@ -4,6 +4,10 @@
 
 ## Usage 
 
+```Ctrl + C``` to cancel current execution.
+
+The system try to close all resources correctly.
+
 ### Command Overview
 
 **FtpCmdline.exe --help**
@@ -16,15 +20,20 @@ Usage:
   FtpCmdline [command] [options]
 
 Options:
-  --version       Show version information
-  -?, -h, --help  Show help and usage information
+  -h, --host <host> (REQUIRED)  The FTP host
+  -u, --user <user>             The FTP user
+  -p, --pwd <pwd>               The FTP pwd
+  --log                         Show log output [default: False]
+  --version                     Show version information
+  -?, -h, --help                Show help and usage information
 
 Commands:
-  list    List path content on host.
-  info    Get Server Infos.
-  delete  Delete file or directory on host.
-  rename  Rename file or directory on host.
-  upload  Upload file or directory to host.
+  list      List path content on host.
+  info      Get Server Infos.
+  delete    Delete file or directory on host.
+  rename    Rename file or directory on host.
+  upload    Upload file or directory to host.
+  download  Download file or directory from host.
 ```
 
 ### Command *list* options
@@ -39,12 +48,12 @@ Usage:
   FtpCmdline list [options]
 
 Options:
-  --host <host>   The FTP host
-  --user <user>   The FTP user
-  --pwd <pwd>     The FTP pwd
-  --path <path>   The path to start []
-  --log           Show log output [default: False]
-  -?, -h, --help  Show help and usage information
+  --path <path> (REQUIRED)      The path to start []
+  -h, --host <host> (REQUIRED)  The FTP host
+  -u, --user <user>             The FTP user
+  -p, --pwd <pwd>               The FTP pwd
+  --log                         Show log output [default: False]
+  -?, -h, --help                Show help and usage information
   ```
 
 ### Command *list* sample
@@ -72,11 +81,11 @@ Usage:
   FtpCmdline info [options]
 
 Options:
-  --host <host>   The FTP host
-  --user <user>   The FTP user
-  --pwd <pwd>     The FTP pwd
-  --log           Show log output [default: False]
-  -?, -h, --help  Show help and usage information
+  -h, --host <host> (REQUIRED)  The FTP host
+  -u, --user <user>             The FTP user
+  -p, --pwd <pwd>               The FTP pwd
+  --log                         Show log output [default: False]
+  -?, -h, --help                Show help and usage information
 ```
 
 ### Command *info* sample
@@ -100,12 +109,12 @@ Usage:
   FtpCmdline delete [options]
 
 Options:
-  --host <host>   The FTP host
-  --user <user>   The FTP user
-  --pwd <pwd>     The FTP pwd
-  --path <path>   The path to start []
-  --log           Show log output [default: False]
-  -?, -h, --help  Show help and usage information
+  --path <path> (REQUIRED)      The path to start []
+  -h, --host <host> (REQUIRED)  The FTP host
+  -u, --user <user>             The FTP user
+  -p, --pwd <pwd>               The FTP pwd
+  --log                         Show log output [default: False]
+  -?, -h, --help                Show help and usage information
 ```
 
 ### Command *delete* samples
@@ -134,13 +143,13 @@ Usage:
   FtpCmdline rename [options]
 
 Options:
-  --host <host>        The FTP host
-  --user <user>        The FTP user
-  --pwd <pwd>          The FTP pwd
-  --path <path>        The path to start []
-  --newPath <newPath>  The path renamed to []
-  --log                Show log output [default: False]
-  -?, -h, --help       Show help and usage information
+  --path <path> (REQUIRED)            The path to start []
+  -n, --newPath <newPath> (REQUIRED)  The path renamed to []
+  -h, --host <host> (REQUIRED)        The FTP host
+  -u, --user <user>                   The FTP user
+  -p, --pwd <pwd>                     The FTP pwd
+  --log                               Show log output [default: False]
+  -?, -h, --help                      Show help and usage information
 ```
 
 ### Command *upload* samples
@@ -169,13 +178,13 @@ Usage:
   FtpCmdline upload [options]
 
 Options:
-  --host <host>            The FTP host
-  --user <user>            The FTP user
-  --pwd <pwd>              The FTP pwd
-  --path <path>            The path to start []
-  --localPath <localPath>  The local path to upload []
-  --log                    Show log output [default: False]
-  -?, -h, --help           Show help and usage information
+  --path <path> (REQUIRED)      The path to start []
+  -l, --localPath <localPath>   The local path to upload []
+  -h, --host <host> (REQUIRED)  The FTP host
+  -u, --user <user>             The FTP user
+  -p, --pwd <pwd>               The FTP pwd
+  --log                         Show log output [default: False]
+  -?, -h, --help                Show help and usage information
 ```
 
 ### Command *upload* sample
@@ -185,3 +194,36 @@ Options:
 ```
 File uploaded
 ```
+
+![Upload Progress](upload.gif)
+
+### Command *download* options
+
+**FtpCmdline.exe download --help**
+
+```
+Description:
+  Download file or directory from host.
+
+Usage:
+  FtpCmdline download [options]
+
+Options:
+  --path <path> (REQUIRED)      The path to start []
+  -l, --localPath <localPath>   The local path to upload []
+  -h, --host <host> (REQUIRED)  The FTP host
+  -u, --user <user>             The FTP user
+  -p, --pwd <pwd>               The FTP pwd
+  --log                         Show log output [default: False]
+  -?, -h, --help                Show help and usage information
+  ```
+
+### Command *download* sample
+
+**FtpCmdline.exe download --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --localPath c:\temp\HAServer --path /transfer_ftp/HAServer**
+
+```
+Directory downloaded
+```
+
+![Download Progress](download.gif)

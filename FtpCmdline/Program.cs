@@ -371,8 +371,11 @@ namespace FtpCmdline
             {
                 IsRequired = true
             };
+            host.AddAlias("-h");
             user = new Option<string>("--user", "The FTP user");
+            user.AddAlias("-u");
             pwd = new Option<string>("--pwd", "The FTP pwd");
+            pwd.AddAlias("-p");
             path = new Option<string>("--path", () => "", "The path to start")
             {
                 IsRequired = true
@@ -381,7 +384,9 @@ namespace FtpCmdline
             {
                 IsRequired = true
             };
+            newPath.AddAlias("-n");
             localPath = new Option<string>("--localPath", () => "", "The local path to upload");
+            localPath.AddAlias("-l");
             log = new Option<bool>("--log", () => false, "Show log output");
 
             var rootCommand = new RootCommand("FTP Helper");
