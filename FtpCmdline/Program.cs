@@ -1,4 +1,4 @@
-﻿using System.CommandLine;
+﻿ using System.CommandLine;
 using System.CommandLine.Invocation;
 using FluentFTP;
 using Spectre.Console;
