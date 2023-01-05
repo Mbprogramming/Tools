@@ -23,5 +23,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'dotnet publish FtpCmdline.csproj /p:PublishProfile=FolderProfile.pubxml'
-    workingDirectory: 'FtpCmdline'
+    script: |
+      cd FtpCmdline
+      dir
+      dotnet publish FtpCmdline.csproj /p:PublishProfile=FolderProfile.pubxml
