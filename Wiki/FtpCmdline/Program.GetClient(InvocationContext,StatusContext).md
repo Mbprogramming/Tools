@@ -1,0 +1,25 @@
+### [FtpCmdline](FtpCmdline.md 'FtpCmdline').[Program](Program.md 'FtpCmdline.Program')
+
+## Program.GetClient(InvocationContext, StatusContext) Method
+
+create and connect ftp client
+
+```csharp
+internal static System.Threading.Tasks.Task<FluentFTP.AsyncFtpClient> GetClient(System.CommandLine.Invocation.InvocationContext context, Spectre.Console.StatusContext context2);
+```
+#### Parameters
+
+<a name='FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext).context'></a>
+
+`context` [System.CommandLine.Invocation.InvocationContext](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Invocation.InvocationContext 'System.CommandLine.Invocation.InvocationContext')
+
+command line context
+
+<a name='FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext).context2'></a>
+
+`context2` [Spectre.Console.StatusContext](https://docs.microsoft.com/en-us/dotnet/api/Spectre.Console.StatusContext 'Spectre.Console.StatusContext')
+
+ansi console status context
+
+#### Returns
+[System.Threading.Tasks.Task&lt;](https://docs.microsoft.com/en-us/dotnet/api/System.Threading.Tasks.Task-1 'System.Threading.Tasks.Task`1')[FluentFTP.AsyncFtpClient](https://docs.microsoft.com/en-us/dotnet/api/FluentFTP.AsyncFtpClient 'FluentFTP.AsyncFtpClient')[&gt;](https://docs.microsoft.com/en-us/dotnet/api/System.Threading.Tasks.Task-1 'System.Threading.Tasks.Task`1')

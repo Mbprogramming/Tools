@@ -15,14 +15,20 @@ complete implementation
 
 | Fields | |
 | :--- | :--- |
-| [returnCode](Program.returnCode.md 'FtpCmdline.Program.returnCode') | return code 0...success 1...error 2...file not found |
+| [host](Program.host.md 'FtpCmdline.Program.host') | ftp host option |
+| [localPath](Program.localPath.md 'FtpCmdline.Program.localPath') | local path option |
+| [log](Program.log.md 'FtpCmdline.Program.log') | extended logging option |
+| [newPath](Program.newPath.md 'FtpCmdline.Program.newPath') | ftp new path option |
+| [path](Program.path.md 'FtpCmdline.Program.path') | ftp path option |
+| [pwd](Program.pwd.md 'FtpCmdline.Program.pwd') | ftp password  option |
+| [user](Program.user.md 'FtpCmdline.Program.user') | ftp user option |
 
 | Methods | |
 | :--- | :--- |
-| [Delete(string, string, string, string, bool)](Program.Delete(string,string,string,string,bool).md 'FtpCmdline.Program.Delete(string, string, string, string, bool)') | delete file or directory on server |
-| [GetClient(string, string, string, bool)](Program.GetClient(string,string,string,bool).md 'FtpCmdline.Program.GetClient(string, string, string, bool)') | create and connect ftp client |
-| [Info(string, string, string, bool)](Program.Info(string,string,string,bool).md 'FtpCmdline.Program.Info(string, string, string, bool)') | get ftp server infos |
-| [List(string, string, string, string, bool)](Program.List(string,string,string,string,bool).md 'FtpCmdline.Program.List(string, string, string, string, bool)') | list entries from path on server |
+| [Delete(InvocationContext)](Program.Delete(InvocationContext).md 'FtpCmdline.Program.Delete(System.CommandLine.Invocation.InvocationContext)') | delete file or directory on server |
+| [GetClient(InvocationContext, StatusContext)](Program.GetClient(InvocationContext,StatusContext).md 'FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext, Spectre.Console.StatusContext)') | create and connect ftp client |
+| [Info(InvocationContext)](Program.Info(InvocationContext).md 'FtpCmdline.Program.Info(System.CommandLine.Invocation.InvocationContext)') | get ftp server infos |
+| [List(InvocationContext)](Program.List(InvocationContext).md 'FtpCmdline.Program.List(System.CommandLine.Invocation.InvocationContext)') | list entries from path on server |
 | [Main(string[])](Program.Main(string[]).md 'FtpCmdline.Program.Main(string[])') | main entry point |
-| [Rename(string, string, string, string, string, bool)](Program.Rename(string,string,string,string,string,bool).md 'FtpCmdline.Program.Rename(string, string, string, string, string, bool)') | rename file or directory on server |
-| [Upload(string, string, string, string, string, bool)](Program.Upload(string,string,string,string,string,bool).md 'FtpCmdline.Program.Upload(string, string, string, string, string, bool)') | upload file or directory to server |
+| [Rename(InvocationContext)](Program.Rename(InvocationContext).md 'FtpCmdline.Program.Rename(System.CommandLine.Invocation.InvocationContext)') | rename file or directory on server |
+| [Upload(InvocationContext)](Program.Upload(InvocationContext).md 'FtpCmdline.Program.Upload(System.CommandLine.Invocation.InvocationContext)') | upload folder or file |

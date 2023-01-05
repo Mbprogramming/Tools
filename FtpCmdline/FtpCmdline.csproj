@@ -23,6 +23,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="FluentFTP" Version="43.0.1" />
+		<PackageReference Include="Spectre.Console" Version="0.45.0" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
 		<PackageReference Include="System.CommandLine.Rendering" Version="0.4.0-alpha.22272.1" />
 	</ItemGroup>

@@ -12,76 +12,82 @@
             complete implementation
             </remarks>
         </member>
-        <member name="F:FtpCmdline.Program.returnCode">
+        <member name="F:FtpCmdline.Program.host">
             <summary>
-            return code 0...success 1...error 2...file not found
+            ftp host option
             </summary>
         </member>
-        <member name="M:FtpCmdline.Program.GetClient(System.String,System.String,System.String,System.Boolean)">
+        <member name="F:FtpCmdline.Program.user">
+            <summary>
+            ftp user option
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.Program.pwd">
+            <summary>
+            ftp password  option
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.Program.path">
+            <summary>
+            ftp path option
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.Program.newPath">
+            <summary>
+            ftp new path option
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.Program.localPath">
+            <summary>
+            local path option
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.Program.log">
+            <summary>
+            extended logging option
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext)">
             <summary>
             create and connect ftp client
             </summary>
-            <param name="host">ftp host</param>
-            <param name="user">ftp user</param>
-            <param name="pwd">ftp user password</param>
-            <param name="log">enable extended logging</param>
-            <returns>created async ftp client</returns>
-            <exception cref="T:System.Exception"></exception>
+            <param name="context">command line context</param>
+            <param name="context2">ansi console status context</param>
+            <returns></returns>
         </member>
-        <member name="M:FtpCmdline.Program.Info(System.String,System.String,System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Program.Info(System.CommandLine.Invocation.InvocationContext)">
             <summary>
             get ftp server infos
             </summary>
-            <param name="host">ftp host</param>
-            <param name="user">ftp user</param>
-            <param name="pwd">ftp user password</param>
-            <param name="log">enable extended logging</param>
+            <param name="context">command line context</param>
             <returns></returns>
         </member>
-        <member name="M:FtpCmdline.Program.List(System.String,System.String,System.String,System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Program.List(System.CommandLine.Invocation.InvocationContext)">
             <summary>
             list entries from path on server
             </summary>
-            <param name="host">ftp host</param>
-            <param name="user">ftp user</param>
-            <param name="pwd">ftp user password</param>
-            <param name="path">server path</param>
-            <param name="log">enable extended logging</param>
+            <param name="context">command line context</param>
             <returns></returns>
         </member>
-        <member name="M:FtpCmdline.Program.Delete(System.String,System.String,System.String,System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Program.Delete(System.CommandLine.Invocation.InvocationContext)">
             <summary>
             delete file or directory on server
             </summary>
-            <param name="host">ftp host</param>
-            <param name="user">ftp user</param>
-            <param name="pwd">ftp user password</param>
-            <param name="path">server path</param>
-            <param name="log">enable extended logging</param>
+            <param name="context">command line context</param>
             <returns></returns>
         </member>
-        <member name="M:FtpCmdline.Program.Rename(System.String,System.String,System.String,System.String,System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Program.Rename(System.CommandLine.Invocation.InvocationContext)">
             <summary>
             rename file or directory on server
             </summary>
-            <param name="host">ftp host</param>
-            <param name="user">ftp user</param>
-            <param name="pwd">ftp user password</param>
-            <param name="path">server path</param>
-            <param name="newName">new server name/path</param>
-            <param name="log">enable extended logging</param>
+            <param name="context">command line context</param>
             <returns></returns>
         </member>
-        <member name="M:FtpCmdline.Program.Upload(System.String,System.String,System.String,System.String,System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Program.Upload(System.CommandLine.Invocation.InvocationContext)">
             <summary>
-            upload file or directory to server
+            upload folder or file
             </summary>
-            <param name="host">ftp host</param>
-            <param name="user">ftp user</param>
-            <param name="pwd">ftp user password</param>
-            <param name="path">server path</param>
-            <param name="localPath">local path</param>
-            <param name="log">enable extended logging</param>
+            <param name="context">command line context</param>
             <returns></returns>
         </member>
         <member name="M:FtpCmdline.Program.Main(System.String[])">
