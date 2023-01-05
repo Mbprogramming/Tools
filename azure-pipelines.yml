@@ -23,7 +23,12 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'choco install GitVersion.Portable'
+    script: 'choco install GitVersion'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
 
 - task: VSBuild@1
   inputs:
@@ -36,3 +41,4 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
