@@ -26,3 +26,11 @@ steps:
     script: |
       cd FtpCmdline
       dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:EnableCompressionInSingleFile=true
+      
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)\Release\net7.0\win-x64\publish\'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
