@@ -25,5 +25,4 @@ steps:
   inputs:
     script: |
       cd FtpCmdline
-      dir
-      dotnet publish FtpCmdline.csproj /p:PublishProfile=FolderProfile
+      dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:EnableCompressionInSingleFile=true
