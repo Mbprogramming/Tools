@@ -90,6 +90,13 @@
             <param name="context">command line context</param>
             <returns></returns>
         </member>
+        <member name="M:FtpCmdline.Program.Download(System.CommandLine.Invocation.InvocationContext)">
+            <summary>
+            download folder or file
+            </summary>
+            <param name="context">command line context</param>
+            <returns></returns>
+        </member>
         <member name="M:FtpCmdline.Program.Main(System.String[])">
             <summary>
             main entry point

@@ -89,7 +89,7 @@ namespace FtpCmdline
 
                              AnsiConsole.WriteLine(client.ServerType.ToString());
                              AnsiConsole.WriteLine(client.ServerOS.ToString());
-                             await client.Disconnect(context.GetCancellationToken());
+                             await client.Disconnect();
                          }
                          catch (Exception ex)
                          {
@@ -125,7 +125,7 @@ namespace FtpCmdline
                               {
                                   AnsiConsole.WriteLine(file);
                               }
-                              await client.Disconnect(context.GetCancellationToken());
+                              await client.Disconnect();
                           }
                           catch (Exception ex)
                           {
@@ -171,7 +171,7 @@ namespace FtpCmdline
                                    AnsiConsole.WriteLine("File or Directory not exists");
                                    context.ExitCode = 2;
                                }
-                               await client.Disconnect(context.GetCancellationToken());
+                               await client.Disconnect();
                            }
                            catch (Exception ex)
                            {
@@ -281,7 +281,69 @@ namespace FtpCmdline
                                    AnsiConsole.WriteLine("File or Directory not exists");
                                    context.ExitCode = 2;
                                }
-                               await client.Disconnect(context.GetCancellationToken());
+                               await client.Disconnect();
+                           }
+                           catch (Exception ex)
+                           {
+                               AnsiConsole.WriteLine(ex.Message);
+                               if (ex.InnerException != null)
+                               {
+                                   AnsiConsole.WriteLine(ex.InnerException.Message);
+                               }
+                               context.ExitCode = 1;
+                           }
+                       });
+        }
+
+        /// <summary>
+        /// download folder or file
+        /// </summary>
+        /// <param name="context">command line context</param>
+        /// <returns></returns>
+        internal static async Task Download(InvocationContext context)
+        {
+            await AnsiConsole.Status()
+                       .Spinner(Spinner.Known.Dots12)
+                       .StartAsync("Prepare Download...", async ctx =>
+                       {
+                           try
+                           {
+                               var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
+                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+
+                               using var client = await GetClient(context, ctx);
+                               ctx.Status = "Prepare Download...";
+
+                               Progress<FtpProgress> progress = new(p => {
+                                   ctx.Status("Download " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.LocalPath + " " + (int)p.Progress + "%");
+                               });
+
+                               if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
+                               {
+
+                                   await client.DownloadDirectory(localPathValue, pathValue,
+                                       FtpFolderSyncMode.Update,
+                                       FtpLocalExists.Overwrite,
+                                       FtpVerify.None, null, progress,
+                                       context.GetCancellationToken());
+
+                                   AnsiConsole.WriteLine("Directory downloaded");
+                                   context.ExitCode = 0;
+                               }
+                               else if (await client.FileExists(pathValue, context.GetCancellationToken()))
+                               {
+                                   await client.DownloadFile(localPathValue, pathValue,
+                                       FtpLocalExists.Overwrite,
+                                       FtpVerify.None,
+                                       progress, context.GetCancellationToken());
+                                   AnsiConsole.WriteLine("File downloaded");
+                               }
+                               else
+                               {
+                                   AnsiConsole.WriteLine("File or Directory not exists");
+                                   context.ExitCode = 2;
+                               }
+                               await client.Disconnect();
                            }
                            catch (Exception ex)
                            {
@@ -353,17 +415,25 @@ namespace FtpCmdline
                                                 localPath
                                             };
 
+            var downloadCommand = new Command("download", "Download file or directory from host.")
+                                            {
+                                                path,
+                                                localPath
+                                            };
+
             rootCommand.AddCommand(listCommand);
             rootCommand.AddCommand(infoCommand);
             rootCommand.AddCommand(deleteCommand);
             rootCommand.AddCommand(renameCommand);
             rootCommand.AddCommand(uploadCommand);
+            rootCommand.AddCommand(downloadCommand);
 
             infoCommand.SetHandler(Info);
             listCommand.SetHandler(List);
             deleteCommand.SetHandler(Delete);
             renameCommand.SetHandler(Rename);
             uploadCommand.SetHandler(Upload);
+            downloadCommand.SetHandler(Download);
 
             return await rootCommand.InvokeAsync(args);
         }
