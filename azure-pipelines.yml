@@ -23,22 +23,26 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'choco install GitVersion'
+    script: |
+      choco install GitVersion.Portable
+      GitVersion
 
-- task: DotNetCoreCLI@2
+- task: CmdLine@2
   inputs:
-    command: 'build'
-    projects: '**/*.csproj'
-
-- task: VSBuild@1
+    script: |
+      cd FtpCmdline
+      dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:EnableCompressionInSingleFile=true
+      
+- task: ArchiveFiles@2
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
+    rootFolderOrFile: 'FtpCmdline\bin\Release\net7.0\win-x64\publish\'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+    
+- task: PublishBuildArtifacts@1
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
