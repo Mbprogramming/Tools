@@ -26,4 +26,4 @@ steps:
     script: |
       cd FtpCmdline
       dir
-      dotnet publish FtpCmdline.csproj /p:PublishProfile=Properties\FolderProfile.pubxml
+      dotnet publish FtpCmdline.csproj /p:PublishProfile=Properties\PublishProfiles\FolderProfile.pubxml
