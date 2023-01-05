@@ -29,7 +29,7 @@ steps:
       
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)\bin\Release\net7.0\win-x64\publish\'
+    rootFolderOrFile: 'FtpCmdline\bin\Release\net7.0\win-x64\publish\'
     includeRootFolder: true
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
