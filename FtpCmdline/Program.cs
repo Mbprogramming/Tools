@@ -413,6 +413,72 @@ namespace FtpCmdline
         }
 
         /// <summary>
+        /// clear items in folder
+        /// </summary>
+        /// <param name="context">command line context</param>
+        /// <returns></returns>
+        internal static async Task Clear(InvocationContext context)
+        {
+            await AnsiConsole.Status()
+                      .Spinner(Spinner.Known.Dots12)
+                      .StartAsync("Clear...", async ctx =>
+                      {
+                          try
+                          {
+                              var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                              var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
+                              var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
+
+                              using var client = await GetClient(context, ctx);
+                              ctx.Status = "Prepare clear...";
+                              var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
+                              // delete all files
+                              var index = 1;
+                              var files = items.Where(w => w.Type == FtpObjectType.File).OrderByDescending(o => o.FullName.Length).ToList();
+                              var deleted = 0;
+                              if (files != null)
+                              {
+                                  AnsiConsole.WriteLine(files.Count + " files to delete");
+                                  foreach (var item in files)
+                                  {
+                                      await client.DeleteFile(item.FullName, context.GetCancellationToken());
+                                      ctx.Status("Delete file " + item.FullName + " (" + index++ + " of " + files.Count + ")");
+                                      deleted++;
+                                  }
+                              }
+                              index = 1;
+                              var directories = items.Where(w => w.Type == FtpObjectType.Directory).OrderByDescending(o => o.FullName.Length).ToList();
+                              if (directories != null)
+                              {
+                                  AnsiConsole.WriteLine(directories.Count + " directories to delete");
+                                  foreach (var item in directories)
+                                  {
+                                      var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
+                                      if (filesInPath != null && filesInPath.Count() > 0)
+                                      {
+                                          continue;
+                                      }
+                                      await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
+                                      ctx.Status("Delete directory " + item.FullName + " (" + index++ + " of " + directories.Count + ")");
+                                      deleted++;
+                                  }
+                              }
+                              AnsiConsole.WriteLine("Delete " + deleted + " of " +  items.Count() + " items");
+                              await client.Disconnect();
+                          }
+                          catch (Exception ex)
+                          {
+                              AnsiConsole.WriteLine(ex.Message);
+                              if (ex.InnerException != null)
+                              {
+                                  AnsiConsole.WriteLine(ex.InnerException.Message);
+                              }
+                              context.ExitCode = 1;
+                          }
+                      });
+        }
+
+        /// <summary>
         /// main entry point
         /// </summary>
         /// <remarks>
@@ -487,12 +553,20 @@ namespace FtpCmdline
                                                 localPath
                                             };
 
+            var clearCommand = new Command("clear", "Clear items in folder.")
+                                            {
+                                                path,
+                                                recursive,
+                                                exclude
+                                            };
+
             rootCommand.AddCommand(listCommand);
             rootCommand.AddCommand(infoCommand);
             rootCommand.AddCommand(deleteCommand);
             rootCommand.AddCommand(renameCommand);
             rootCommand.AddCommand(uploadCommand);
             rootCommand.AddCommand(downloadCommand);
+            rootCommand.AddCommand(clearCommand);
 
             infoCommand.SetHandler(Info);
             listCommand.SetHandler(List);
@@ -500,6 +574,7 @@ namespace FtpCmdline
             renameCommand.SetHandler(Rename);
             uploadCommand.SetHandler(Upload);
             downloadCommand.SetHandler(Download);
+            clearCommand.SetHandler(Clear);
 
             return await rootCommand.InvokeAsync(args);
         }

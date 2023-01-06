@@ -27,6 +27,7 @@ complete implementation
 
 | Methods | |
 | :--- | :--- |
+| [Clear(InvocationContext)](Program.Clear(InvocationContext).md 'FtpCmdline.Program.Clear(System.CommandLine.Invocation.InvocationContext)') | clear items in folder |
 | [Delete(InvocationContext)](Program.Delete(InvocationContext).md 'FtpCmdline.Program.Delete(System.CommandLine.Invocation.InvocationContext)') | delete file or directory on server |
 | [Download(InvocationContext)](Program.Download(InvocationContext).md 'FtpCmdline.Program.Download(System.CommandLine.Invocation.InvocationContext)') | download folder or file |
 | [GetClient(InvocationContext, StatusContext)](Program.GetClient(InvocationContext,StatusContext).md 'FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext, Spectre.Console.StatusContext)') | create and connect ftp client |
