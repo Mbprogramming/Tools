@@ -21,6 +21,7 @@ complete implementation
 | [newPath](Program.newPath.md 'FtpCmdline.Program.newPath') | ftp new path option |
 | [path](Program.path.md 'FtpCmdline.Program.path') | ftp path option |
 | [pwd](Program.pwd.md 'FtpCmdline.Program.pwd') | ftp password  option |
+| [recursive](Program.recursive.md 'FtpCmdline.Program.recursive') | Go down the directory tree recursivly |
 | [user](Program.user.md 'FtpCmdline.Program.user') | ftp user option |
 
 | Methods | |

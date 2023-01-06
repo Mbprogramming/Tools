@@ -41,6 +41,10 @@ namespace FtpCmdline
         /// extended logging option
         /// </summary>
         internal static Option<bool>? log;
+        /// <summary>
+        /// Go down the directory tree recursivly
+        /// </summary>
+        internal static Option<bool>? recursive;
 
         /// <summary>
         /// create and connect ftp client
@@ -103,6 +107,31 @@ namespace FtpCmdline
                      });
         }
 
+        private static async Task<IList<FtpListItem>> GetItems(AsyncFtpClient client, string path, IList<FtpListItem> items, bool recursive, CancellationToken token)
+        {
+            try
+            {
+                var result = await client.GetListing(path, token);
+                if(!token.IsCancellationRequested)
+                {
+                    foreach(FtpListItem item in result)
+                    { 
+                        items.Add(item);
+                        if(item.Type == FtpObjectType.Directory && recursive)
+                        {
+                            await GetItems(client, path + "/" + item.Name, items, recursive, token);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+
+            return items;
+        }
+
         /// <summary>
         /// list entries from path on server
         /// </summary>
@@ -117,14 +146,16 @@ namespace FtpCmdline
                           try
                           {
                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                              var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
 
                               using var client = await GetClient(context, ctx);
                               ctx.Status = "List...";
-                              var files = await client.GetNameListing(pathValue, context.GetCancellationToken());
-                              foreach (var file in files)
+                              var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, context.GetCancellationToken());
+                              foreach (var item in items)
                               {
-                                  AnsiConsole.WriteLine(file);
+                                  AnsiConsole.WriteLine(item.FullName);
                               }
+                              AnsiConsole.WriteLine("Found " + items.Count + " items");
                               await client.Disconnect();
                           }
                           catch (Exception ex)
@@ -388,6 +419,8 @@ namespace FtpCmdline
             localPath = new Option<string>("--localPath", () => "", "The local path to upload");
             localPath.AddAlias("-l");
             log = new Option<bool>("--log", () => false, "Show log output");
+            recursive = new Option<bool>("--recursive", () => false, "Go down the directory tree recursivly");
+            recursive.AddAlias("-r");
 
             var rootCommand = new RootCommand("FTP Helper");
 
@@ -398,7 +431,8 @@ namespace FtpCmdline
 
             var listCommand = new Command("list", "List path content on host.")
                                             {
-                                                path
+                                                path,
+                                                recursive
                                             };
 
             var infoCommand = new Command("info", "Get Server Infos.");
