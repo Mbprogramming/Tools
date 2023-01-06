@@ -26,7 +26,7 @@ steps:
     script: |
       choco install GitVersion.Portable
       GitVersion
-      py ..\set_version.py ..\
+      py .\set_version.py .\
 
 - task: CmdLine@2
   inputs:
