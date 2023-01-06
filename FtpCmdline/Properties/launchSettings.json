@@ -2,7 +2,7 @@
   "profiles": {
     "FtpCmdline": {
       "commandName": "Project",
-      "commandLineArgs": "download --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --localPath c:\\temp\\HALogs --path /transfer_ftp/HALogs"
+      "commandLineArgs": "--version"
     }
   }
 }
