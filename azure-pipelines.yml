@@ -26,12 +26,16 @@ steps:
     script: |
       choco install GitVersion.Portable
       GitVersion
+      py .\set_version.py .\
 
 - task: CmdLine@2
   inputs:
     script: |
       cd FtpCmdline
+      dir
       dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true -p:EnableCompressionInSingleFile=true
+      dir
+      type GlobalAssemblyInfo.cs
       
 - task: ArchiveFiles@2
   inputs:
