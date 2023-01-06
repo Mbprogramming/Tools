@@ -15,6 +15,7 @@ complete implementation
 
 | Fields | |
 | :--- | :--- |
+| [exclude](Program.exclude.md 'FtpCmdline.Program.exclude') | exclude items in this list |
 | [host](Program.host.md 'FtpCmdline.Program.host') | ftp host option |
 | [localPath](Program.localPath.md 'FtpCmdline.Program.localPath') | local path option |
 | [log](Program.log.md 'FtpCmdline.Program.log') | extended logging option |

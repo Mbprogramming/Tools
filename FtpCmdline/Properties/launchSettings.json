@@ -2,7 +2,7 @@
   "profiles": {
     "FtpCmdline": {
       "commandName": "Project",
-      "commandLineArgs": "list --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --path /transfer_ftp --recursive true"
+      "commandLineArgs": "list --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --path /transfer_ftp --recursive true --exclude /zh-Hant --exclude /zh-Hans"
     }
   }
 }

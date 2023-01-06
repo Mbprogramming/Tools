@@ -45,6 +45,10 @@ namespace FtpCmdline
         /// Go down the directory tree recursivly
         /// </summary>
         internal static Option<bool>? recursive;
+        /// <summary>
+        /// exclude items in this list 
+        /// </summary>
+        internal static Option<string[]>? exclude;
 
         /// <summary>
         /// create and connect ftp client
@@ -107,7 +111,7 @@ namespace FtpCmdline
                      });
         }
 
-        private static async Task<IList<FtpListItem>> GetItems(AsyncFtpClient client, string path, IList<FtpListItem> items, bool recursive, CancellationToken token)
+        private static async Task<IList<FtpListItem>> GetItems(AsyncFtpClient client, string path, IList<FtpListItem> items, bool recursive, string[]? exclude, CancellationToken token)
         {
             try
             {
@@ -116,10 +120,29 @@ namespace FtpCmdline
                 {
                     foreach(FtpListItem item in result)
                     { 
+                        if(exclude != null)
+                        {
+                            var skip = false;
+                            foreach(var ex in exclude)
+                            {
+                                if(item.FullName.Contains(ex))
+                                {
+                                    skip = true; 
+                                    break;
+                                }
+                                    
+                            }
+                            if (skip)
+                            {
+                                continue;
+                            }
+                        }
+
                         items.Add(item);
+
                         if(item.Type == FtpObjectType.Directory && recursive)
                         {
-                            await GetItems(client, path + "/" + item.Name, items, recursive, token);
+                            await GetItems(client, path + "/" + item.Name, items, recursive, exclude, token);
                         }
                     }
                 }
@@ -147,10 +170,11 @@ namespace FtpCmdline
                           {
                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                               var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
+                              var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
 
                               using var client = await GetClient(context, ctx);
                               ctx.Status = "List...";
-                              var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, context.GetCancellationToken());
+                              var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
                               foreach (var item in items)
                               {
                                   AnsiConsole.WriteLine(item.FullName);
@@ -421,6 +445,8 @@ namespace FtpCmdline
             log = new Option<bool>("--log", () => false, "Show log output");
             recursive = new Option<bool>("--recursive", () => false, "Go down the directory tree recursivly");
             recursive.AddAlias("-r");
+            exclude = new Option<string[]>("--exclude", "Exclude items in this list");
+            exclude.AddAlias("-e");
 
             var rootCommand = new RootCommand("FTP Helper");
 
@@ -432,7 +458,8 @@ namespace FtpCmdline
             var listCommand = new Command("list", "List path content on host.")
                                             {
                                                 path,
-                                                recursive
+                                                recursive,
+                                                exclude
                                             };
 
             var infoCommand = new Command("info", "Get Server Infos.");
