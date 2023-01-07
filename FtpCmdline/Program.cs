@@ -41,6 +41,14 @@ namespace FtpCmdline
         /// extended logging option
         /// </summary>
         internal static Option<bool>? log;
+        /// <summary>
+        /// Go down the directory tree recursivly
+        /// </summary>
+        internal static Option<bool>? recursive;
+        /// <summary>
+        /// exclude items in this list 
+        /// </summary>
+        internal static Option<string[]>? exclude;
 
         /// <summary>
         /// create and connect ftp client
@@ -103,6 +111,50 @@ namespace FtpCmdline
                      });
         }
 
+        private static async Task<IList<FtpListItem>> GetItems(AsyncFtpClient client, string path, IList<FtpListItem> items, bool recursive, string[]? exclude, CancellationToken token)
+        {
+            try
+            {
+                var result = await client.GetListing(path, token);
+                if(!token.IsCancellationRequested)
+                {
+                    foreach(FtpListItem item in result)
+                    { 
+                        if(exclude != null)
+                        {
+                            var skip = false;
+                            foreach(var ex in exclude)
+                            {
+                                if(item.FullName.Contains(ex))
+                                {
+                                    skip = true; 
+                                    break;
+                                }
+                                    
+                            }
+                            if (skip)
+                            {
+                                continue;
+                            }
+                        }
+
+                        items.Add(item);
+
+                        if(item.Type == FtpObjectType.Directory && recursive)
+                        {
+                            await GetItems(client, path + "/" + item.Name, items, recursive, exclude, token);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+
+            return items;
+        }
+
         /// <summary>
         /// list entries from path on server
         /// </summary>
@@ -117,14 +169,17 @@ namespace FtpCmdline
                           try
                           {
                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                              var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
+                              var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
 
                               using var client = await GetClient(context, ctx);
                               ctx.Status = "List...";
-                              var files = await client.GetNameListing(pathValue, context.GetCancellationToken());
-                              foreach (var file in files)
+                              var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
+                              foreach (var item in items)
                               {
-                                  AnsiConsole.WriteLine(file);
+                                  AnsiConsole.WriteLine(item.FullName);
                               }
+                              AnsiConsole.WriteLine("Found " + items.Count + " items");
                               await client.Disconnect();
                           }
                           catch (Exception ex)
@@ -358,6 +413,72 @@ namespace FtpCmdline
         }
 
         /// <summary>
+        /// clear items in folder
+        /// </summary>
+        /// <param name="context">command line context</param>
+        /// <returns></returns>
+        internal static async Task Clear(InvocationContext context)
+        {
+            await AnsiConsole.Status()
+                      .Spinner(Spinner.Known.Dots12)
+                      .StartAsync("Clear...", async ctx =>
+                      {
+                          try
+                          {
+                              var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                              var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
+                              var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
+
+                              using var client = await GetClient(context, ctx);
+                              ctx.Status = "Prepare clear...";
+                              var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
+                              // delete all files
+                              var index = 1;
+                              var files = items.Where(w => w.Type == FtpObjectType.File).OrderByDescending(o => o.FullName.Length).ToList();
+                              var deleted = 0;
+                              if (files != null)
+                              {
+                                  AnsiConsole.WriteLine(files.Count + " files to delete");
+                                  foreach (var item in files)
+                                  {
+                                      await client.DeleteFile(item.FullName, context.GetCancellationToken());
+                                      ctx.Status("Delete file " + item.FullName + " (" + index++ + " of " + files.Count + ")");
+                                      deleted++;
+                                  }
+                              }
+                              index = 1;
+                              var directories = items.Where(w => w.Type == FtpObjectType.Directory).OrderByDescending(o => o.FullName.Length).ToList();
+                              if (directories != null)
+                              {
+                                  AnsiConsole.WriteLine(directories.Count + " directories to delete");
+                                  foreach (var item in directories)
+                                  {
+                                      var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
+                                      if (filesInPath != null && filesInPath.Count() > 0)
+                                      {
+                                          continue;
+                                      }
+                                      await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
+                                      ctx.Status("Delete directory " + item.FullName + " (" + index++ + " of " + directories.Count + ")");
+                                      deleted++;
+                                  }
+                              }
+                              AnsiConsole.WriteLine("Delete " + deleted + " of " +  items.Count() + " items");
+                              await client.Disconnect();
+                          }
+                          catch (Exception ex)
+                          {
+                              AnsiConsole.WriteLine(ex.Message);
+                              if (ex.InnerException != null)
+                              {
+                                  AnsiConsole.WriteLine(ex.InnerException.Message);
+                              }
+                              context.ExitCode = 1;
+                          }
+                      });
+        }
+
+        /// <summary>
         /// main entry point
         /// </summary>
         /// <remarks>
@@ -388,6 +509,10 @@ namespace FtpCmdline
             localPath = new Option<string>("--localPath", () => "", "The local path to upload");
             localPath.AddAlias("-l");
             log = new Option<bool>("--log", () => false, "Show log output");
+            recursive = new Option<bool>("--recursive", () => false, "Go down the directory tree recursivly");
+            recursive.AddAlias("-r");
+            exclude = new Option<string[]>("--exclude", "Exclude items in this list");
+            exclude.AddAlias("-e");
 
             var rootCommand = new RootCommand("FTP Helper");
 
@@ -398,7 +523,9 @@ namespace FtpCmdline
 
             var listCommand = new Command("list", "List path content on host.")
                                             {
-                                                path
+                                                path,
+                                                recursive,
+                                                exclude
                                             };
 
             var infoCommand = new Command("info", "Get Server Infos.");
@@ -426,12 +553,20 @@ namespace FtpCmdline
                                                 localPath
                                             };
 
+            var clearCommand = new Command("clear", "Clear items in folder.")
+                                            {
+                                                path,
+                                                recursive,
+                                                exclude
+                                            };
+
             rootCommand.AddCommand(listCommand);
             rootCommand.AddCommand(infoCommand);
             rootCommand.AddCommand(deleteCommand);
             rootCommand.AddCommand(renameCommand);
             rootCommand.AddCommand(uploadCommand);
             rootCommand.AddCommand(downloadCommand);
+            rootCommand.AddCommand(clearCommand);
 
             infoCommand.SetHandler(Info);
             listCommand.SetHandler(List);
@@ -439,6 +574,7 @@ namespace FtpCmdline
             renameCommand.SetHandler(Rename);
             uploadCommand.SetHandler(Upload);
             downloadCommand.SetHandler(Download);
+            clearCommand.SetHandler(Clear);
 
             return await rootCommand.InvokeAsync(args);
         }

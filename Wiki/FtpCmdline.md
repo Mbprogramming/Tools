@@ -34,6 +34,7 @@ Commands:
   rename    Rename file or directory on host.
   upload    Upload file or directory to host.
   download  Download file or directory from host.
+  clear     Clear items in folder.
 ```
 
 ### Command *list* options
@@ -49,6 +50,8 @@ Usage:
 
 Options:
   --path <path> (REQUIRED)      The path to start []
+  -r, --recursive               Go down the directory tree recursivly [default: False]
+  -e, --exclude <exclude>       Exclude items in this list
   -h, --host <host> (REQUIRED)  The FTP host
   -u, --user <user>             The FTP user
   -p, --pwd <pwd>               The FTP pwd
@@ -227,3 +230,49 @@ Directory downloaded
 ```
 
 ![Download Progress](download.gif)
+
+### Command *clear* options
+
+**FtpCmdline.exe clear --help**
+
+```
+Description:
+  Clear items in folder.
+
+Usage:
+  FtpCmdline clear [options]
+
+Options:
+  --path <path> (REQUIRED)      The path to start []
+  -r, --recursive               Go down the directory tree recursivly [default: False]
+  -e, --exclude <exclude>       Exclude items in this list
+  -h, --host <host> (REQUIRED)  The FTP host
+  -u, --user <user>             The FTP user
+  -p, --pwd <pwd>               The FTP pwd
+  --log                         Show log output [default: False]
+  -?, -h, --help                Show help and usage information
+```
+
+### Command *clear* sample
+
+**FtpCmdline.exe clear --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --path /transfer_ftp/CVService --recursive true --exclude /Templates --exclude app_offline.htm**
+
+![Clear Progress](clear.gif)
+
+```
+676 files to delete
+17 directories to delete
+Delete 692 of 693 items
+```
+
+**FtpCmdline.exe list --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --path /transfer_ftp/CVService --recursive true**
+
+```
+/transfer_ftp/CVService/app_offline.htm
+/transfer_ftp/CVService/IONOSPublish
+/transfer_ftp/CVService/IONOSPublish/_app_offline.htm
+/transfer_ftp/CVService/Templates
+/transfer_ftp/CVService/Templates/ReportTemplate.json
+/transfer_ftp/CVService/Templates/Template.docx
+Found 6 items
+```
