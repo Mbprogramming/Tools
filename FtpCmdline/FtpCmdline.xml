@@ -62,6 +62,11 @@
             skip or overwrite existing files
             </summary>
         </member>
+        <member name="F:FtpCmdline.Program.tree">
+            <summary>
+            list only directory tree
+            </summary>
+        </member>
         <member name="M:FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext)">
             <summary>
             create and connect ftp client

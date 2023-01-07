@@ -1,5 +1,7 @@
 ﻿ using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.ComponentModel;
+using System.Security.Cryptography;
 using FluentFTP;
 using Spectre.Console;
 
@@ -53,6 +55,10 @@ namespace FtpCmdline
         /// skip or overwrite existing files
         /// </summary>
         internal static Option<bool>? skip;
+        /// <summary>
+        /// list only directory tree
+        /// </summary>
+        internal static Option<bool>? tree;
 
         /// <summary>
         /// create and connect ftp client
@@ -175,23 +181,91 @@ namespace FtpCmdline
                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                               var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
                               var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
+                              var treeValue = tree != null ? context.ParseResult.GetValueForOption(tree) : false;
 
                               using var client = await GetClient(context, ctx);
                               ctx.Status = "List...";
                               var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
+                              Tree? root = null;
+                              IList<TreeNode> parents = new List<TreeNode>();
+                              int level = 0;
                               foreach (var item in items)
                               {
-                                  AnsiConsole.WriteLine(item.FullName);
+                                  if(treeValue)
+                                  {
+                                      if (item.Type == FtpObjectType.Directory)
+                                      {
+                                          var indeedTemp = item.FullName;
+                                          if(pathValue!= null && pathValue.Length > 0)
+                                          {
+                                              indeedTemp = indeedTemp.Replace(pathValue, "");
+                                          }
+
+                                          var indeed = indeedTemp.Where(w => w == '/').Count() - 1;
+
+                                          if(indeed == 0)
+                                          {
+                                              if(root != null)
+                                              {
+                                                  AnsiConsole.Write(root);
+                                              }
+                                              root = new Tree(item.Name);
+                                              parents = new List<TreeNode>();
+                                              level = 0;
+                                          }
+                                          else
+                                          {
+                                              if(indeed == 1 && root != null)
+                                              {
+                                                  parents.Add(root.AddNode(item.Name));
+                                                  level = 1;
+                                              } 
+                                              else
+                                              {
+                                                  if(indeed > level)
+                                                  {
+                                                      parents.Add(parents.Last().AddNode(item.Name));
+                                                      level++;
+                                                  } 
+                                                  else if(indeed == level)
+                                                  {
+                                                      parents.Remove(parents.Last());
+                                                      parents.Add(parents.Last().AddNode(item.Name));
+                                                  }
+                                                  else if(indeed < level)
+                                                  {
+                                                      while(level > indeed)
+                                                      {
+                                                          level--;
+                                                          parents.Remove(parents.Last());
+                                                      }
+                                                      parents.Remove(parents.Last());
+                                                      parents.Add(parents.Last().AddNode(item.Name));
+                                                  }
+                                              }
+                                          }
+                                      }
+                                  }
+                                  else
+                                      AnsiConsole.WriteLine(item.FullName);
                               }
-                              AnsiConsole.WriteLine("Found " + items.Count + " items");
+                              if (treeValue && root != null)
+                              {
+                                  AnsiConsole.Write(root);
+                                  AnsiConsole.WriteLine("Found " + items.Where(w => w.Type == FtpObjectType.Directory).Count() + " items");
+                              }
+                              else
+                              {
+                                  AnsiConsole.WriteLine("Found " + items.Count + " items");
+                              }
                               await client.Disconnect();
                           }
                           catch (Exception ex)
                           {
-                              AnsiConsole.WriteLine(ex.Message);
+                              AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
                               if (ex.InnerException != null)
                               {
-                                  AnsiConsole.WriteLine(ex.InnerException.Message);
+                                  AnsiConsole.WriteException(ex.InnerException, ExceptionFormats.ShortenEverything);
                               }
                               context.ExitCode = 1;
                           }
@@ -521,6 +595,8 @@ namespace FtpCmdline
             exclude.AddAlias("-e");
             skip = new Option<bool>("--skip", () => true, "Skip (true) or overwrite (false) existing files");
             skip.AddAlias("-s");
+            tree = new Option<bool>("--tree", () => false, "Show only directory tree");
+            tree.AddAlias("-t");
 
             var rootCommand = new RootCommand("FTP Helper");
 
@@ -533,7 +609,8 @@ namespace FtpCmdline
                                             {
                                                 path,
                                                 recursive,
-                                                exclude
+                                                exclude,
+                                                tree
                                             };
 
             var infoCommand = new Command("info", "Get Server Infos.");
