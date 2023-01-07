@@ -49,6 +49,10 @@ namespace FtpCmdline
         /// exclude items in this list 
         /// </summary>
         internal static Option<string[]>? exclude;
+        /// <summary>
+        /// skip or overwrite existing files
+        /// </summary>
+        internal static Option<bool>? skip;
 
         /// <summary>
         /// create and connect ftp client
@@ -303,6 +307,7 @@ namespace FtpCmdline
                            {
                                var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
                                var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                               var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
                                using var client = await GetClient(context, ctx);
                                ctx.Status = "Prepare Upload...";
@@ -314,10 +319,10 @@ namespace FtpCmdline
                                if (Directory.Exists(localPathValue))
                                {
 
-                                   await client.UploadDirectory(localPathValue, pathValue, 
-                                       FtpFolderSyncMode.Update, 
-                                       FtpRemoteExists.Overwrite, 
-                                       FtpVerify.None, null, progress, 
+                                   await client.UploadDirectory(localPathValue, pathValue,
+                                       FtpFolderSyncMode.Update,
+                                       skipValue ? FtpRemoteExists.Skip : FtpRemoteExists.Overwrite,
+                                       FtpVerify.None, null, progress,
                                        context.GetCancellationToken());
 
                                    AnsiConsole.WriteLine("Directory uploaded");
@@ -365,6 +370,7 @@ namespace FtpCmdline
                            {
                                var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
                                var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                               var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
                                using var client = await GetClient(context, ctx);
                                ctx.Status = "Prepare Download...";
@@ -378,7 +384,7 @@ namespace FtpCmdline
 
                                    await client.DownloadDirectory(localPathValue, pathValue,
                                        FtpFolderSyncMode.Update,
-                                       FtpLocalExists.Overwrite,
+                                       skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                        FtpVerify.None, null, progress,
                                        context.GetCancellationToken());
 
@@ -513,6 +519,8 @@ namespace FtpCmdline
             recursive.AddAlias("-r");
             exclude = new Option<string[]>("--exclude", "Exclude items in this list");
             exclude.AddAlias("-e");
+            skip = new Option<bool>("--skip", () => true, "Skip (true) or overwrite (false) existing files");
+            skip.AddAlias("-s");
 
             var rootCommand = new RootCommand("FTP Helper");
 
@@ -544,13 +552,15 @@ namespace FtpCmdline
             var uploadCommand = new Command("upload", "Upload file or directory to host.")
                                             {
                                                 path,
-                                                localPath
+                                                localPath, 
+                                                skip
                                             };
 
             var downloadCommand = new Command("download", "Download file or directory from host.")
                                             {
                                                 path,
-                                                localPath
+                                                localPath, 
+                                                skip
                                             };
 
             var clearCommand = new Command("clear", "Clear items in folder.")

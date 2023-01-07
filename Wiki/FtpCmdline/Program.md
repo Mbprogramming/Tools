@@ -23,6 +23,7 @@ complete implementation
 | [path](Program.path.md 'FtpCmdline.Program.path') | ftp path option |
 | [pwd](Program.pwd.md 'FtpCmdline.Program.pwd') | ftp password  option |
 | [recursive](Program.recursive.md 'FtpCmdline.Program.recursive') | Go down the directory tree recursivly |
+| [skip](Program.skip.md 'FtpCmdline.Program.skip') | skip or overwrite existing files |
 | [user](Program.user.md 'FtpCmdline.Program.user') | ftp user option |
 
 | Methods | |
