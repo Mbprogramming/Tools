@@ -9,7 +9,10 @@
             Main program implementation class and entry point
             </summary>
             <remarks>
-            complete implementation
+            complete implementation <br/>
+            See the following package documentations <br/>
+            <see href="https://spectreconsole.net">Spectre.Console</see> <br/>
+            <see href="https://learn.microsoft.com/en-us/dotnet/standard/commandline/">System.CommandLine</see>
             </remarks>
         </member>
         <member name="F:FtpCmdline.Program.host">

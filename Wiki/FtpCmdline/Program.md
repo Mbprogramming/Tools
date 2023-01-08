@@ -11,7 +11,8 @@ internal class Program
 Inheritance [System.Object](https://docs.microsoft.com/en-us/dotnet/api/System.Object 'System.Object') &#129106; Program
 
 ### Remarks
-complete implementation
+complete implementation <br/>  
+See the following package documentations <br/>[Spectre.Console](https://spectreconsole.net 'https://spectreconsole.net')<br/>[System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/ 'https://learn.microsoft.com/en-us/dotnet/standard/commandline/')
 
 | Fields | |
 | :--- | :--- |

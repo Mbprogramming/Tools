@@ -52,6 +52,7 @@ Options:
   --path <path> (REQUIRED)      The path to start []
   -r, --recursive               Go down the directory tree recursivly [default: False]
   -e, --exclude <exclude>       Exclude items in this list
+  -t, --tree                    Show only directory tree [default: False]
   -h, --host <host> (REQUIRED)  The FTP host
   -u, --user <user>             The FTP user
   -p, --pwd <pwd>               The FTP pwd
@@ -59,17 +60,28 @@ Options:
   -?, -h, --help                Show help and usage information
   ```
 
-### Command *list* sample
+### Command *list* samples
 
 **FtpCmdline.exe list --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --path /transfer_ftp**
 
 ```
-/transfer_ftp/garfield.jpg
-/transfer_ftp/halog.log
-/transfer_ftp/HALogs
-/transfer_ftp/internal-nlog.txt
-/transfer_ftp/nlog-all-2023-01-03.log
-/transfer_ftp/willi.jpg
+/transfer_ftp/CVService
+/transfer_ftp/CVService/app_offline.htm
+/transfer_ftp/CVService/IONOSPublish
+/transfer_ftp/CVService/IONOSPublish/_app_offline.htm
+/transfer_ftp/CVService/Templates
+/transfer_ftp/CVService/Templates/ReportTemplate.json
+/transfer_ftp/CVService/Templates/Template.docx
+Found 7 items
+```
+
+**FtpCmdline.exe list --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --path /transfer_ftp --recursive --tree**
+
+```
+CVService
+├── IONOSPublish
+└── Templates
+Found 3 items
 ```
 
 ### Command *info* options
@@ -155,7 +167,7 @@ Options:
   -?, -h, --help                      Show help and usage information
 ```
 
-### Command *upload* samples
+### Command *rename* samples
 
 **FtpCmdline.exe rename --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --path /transfer_ftp/HALogs --newPath /transfer_ftp/HALogsOld**
 
@@ -180,9 +192,10 @@ Description:
 Usage:
   FtpCmdline upload [options]
 
-Options:
+OOptions:
   --path <path> (REQUIRED)      The path to start []
   -l, --localPath <localPath>   The local path to upload []
+  -s, --skip                    Skip (true) or overwrite (false) existing files [default: True]
   -h, --host <host> (REQUIRED)  The FTP host
   -u, --user <user>             The FTP user
   -p, --pwd <pwd>               The FTP pwd
@@ -214,6 +227,7 @@ Usage:
 Options:
   --path <path> (REQUIRED)      The path to start []
   -l, --localPath <localPath>   The local path to upload []
+  -s, --skip                    Skip (true) or overwrite (false) existing files [default: True]
   -h, --host <host> (REQUIRED)  The FTP host
   -u, --user <user>             The FTP user
   -p, --pwd <pwd>               The FTP pwd

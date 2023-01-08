@@ -1,9 +1,8 @@
-﻿ using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.ComponentModel;
-using System.Security.Cryptography;
 using FluentFTP;
 using Spectre.Console;
+using static System.Net.WebRequestMethods;
 
 namespace FtpCmdline
 {
@@ -11,7 +10,10 @@ namespace FtpCmdline
     /// Main program implementation class and entry point
     /// </summary>
     /// <remarks>
-    /// complete implementation
+    /// complete implementation <br/>
+    /// See the following package documentations <br/>
+    /// <see href="https://spectreconsole.net">Spectre.Console</see> <br/>
+    /// <see href="https://learn.microsoft.com/en-us/dotnet/standard/commandline/">System.CommandLine</see>
     /// </remarks>
     internal class Program
     {
@@ -402,7 +404,7 @@ namespace FtpCmdline
                                    AnsiConsole.WriteLine("Directory uploaded");
                                    context.ExitCode = 0;
                                }
-                               else if (File.Exists(localPathValue))
+                               else if (System.IO.File.Exists(localPathValue))
                                {
                                    await client.UploadFile(localPathValue, pathValue, 
                                        FtpRemoteExists.Overwrite, 
