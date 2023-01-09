@@ -61,6 +61,68 @@ namespace FtpCmdline
         /// list only directory tree
         /// </summary>
         internal static Option<bool>? tree;
+        /// <summary>
+        /// result output file
+        /// </summary>
+        internal static Option<string>? output;
+
+        private static async Task<IList<FtpListItem>> GetItems(AsyncFtpClient client, string path, IList<FtpListItem> items, bool recursive, string[]? exclude, CancellationToken token)
+        {
+            try
+            {
+                var result = await client.GetListing(path, token);
+                if (!token.IsCancellationRequested)
+                {
+                    foreach (FtpListItem item in result)
+                    {
+                        if (exclude != null)
+                        {
+                            var skip = false;
+                            foreach (var ex in exclude)
+                            {
+                                if (item.FullName.Contains(ex))
+                                {
+                                    skip = true;
+                                    break;
+                                }
+
+                            }
+                            if (skip)
+                            {
+                                continue;
+                            }
+                        }
+
+                        items.Add(item);
+
+                        if (item.Type == FtpObjectType.Directory && recursive)
+                        {
+                            await GetItems(client, path + "/" + item.Name, items, recursive, exclude, token);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+
+            return items;
+        }
+
+        private static async Task OutputToDo(InvocationContext context, StatusContext ctx, Func<InvocationContext, StatusContext, StreamWriter?, Task> todo)
+        {
+            var outputValue = output != null ? context.ParseResult.GetValueForOption(output) : string.Empty;
+            StreamWriter? outputFile = null;
+            if (!string.IsNullOrEmpty(outputValue))
+            {
+                outputFile = System.IO.File.CreateText(outputValue);
+            }
+            await todo(context, ctx, outputFile);
+            outputFile?.Close();
+            outputFile?.Dispose();
+        }
+
 
         /// <summary>
         /// create and connect ftp client
@@ -102,69 +164,32 @@ namespace FtpCmdline
                      .Spinner(Spinner.Known.Dots12)
                      .StartAsync("Info...", async ctx =>
                      {
-                         try
+                         await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                          {
-                             using var client = await GetClient(context, ctx);
-                             ctx.Status = "Info...";
-
-                             AnsiConsole.WriteLine(client.ServerType.ToString());
-                             AnsiConsole.WriteLine(client.ServerOS.ToString());
-                             await client.Disconnect();
-                         }
-                         catch (Exception ex)
-                         {
-                             AnsiConsole.WriteLine(ex.Message);
-                             if (ex.InnerException != null)
+                             try
                              {
-                                 AnsiConsole.WriteLine(ex.InnerException.Message);
+                                 using var client = await GetClient(context, ctx);
+                                 ctx.Status = "Info...";
+
+                                 AnsiConsole.WriteLine(client.ServerType.ToString());
+                                 AnsiConsole.WriteLine(client.ServerOS.ToString());
+
+                                 outputFile?.WriteLine(client.ServerType.ToString());
+                                 outputFile?.WriteLine(client.ServerOS.ToString());
+
+                                 await client.Disconnect();
                              }
-                             context.ExitCode = 1;
-                         }
+                             catch (Exception ex)
+                             {
+                                 AnsiConsole.WriteLine(ex.Message);
+                                 if (ex.InnerException != null)
+                                 {
+                                     AnsiConsole.WriteLine(ex.InnerException.Message);
+                                 }
+                                 context.ExitCode = 1;
+                             }
+                         });
                      });
-        }
-
-        private static async Task<IList<FtpListItem>> GetItems(AsyncFtpClient client, string path, IList<FtpListItem> items, bool recursive, string[]? exclude, CancellationToken token)
-        {
-            try
-            {
-                var result = await client.GetListing(path, token);
-                if(!token.IsCancellationRequested)
-                {
-                    foreach(FtpListItem item in result)
-                    { 
-                        if(exclude != null)
-                        {
-                            var skip = false;
-                            foreach(var ex in exclude)
-                            {
-                                if(item.FullName.Contains(ex))
-                                {
-                                    skip = true; 
-                                    break;
-                                }
-                                    
-                            }
-                            if (skip)
-                            {
-                                continue;
-                            }
-                        }
-
-                        items.Add(item);
-
-                        if(item.Type == FtpObjectType.Directory && recursive)
-                        {
-                            await GetItems(client, path + "/" + item.Name, items, recursive, exclude, token);
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                throw;
-            }
-
-            return items;
         }
 
         /// <summary>
@@ -178,99 +203,106 @@ namespace FtpCmdline
                       .Spinner(Spinner.Known.Dots12)
                       .StartAsync("List...", async ctx =>
                       {
-                          try
+                          await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                           {
-                              var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
-                              var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
-                              var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
-                              var treeValue = tree != null ? context.ParseResult.GetValueForOption(tree) : false;
-
-                              using var client = await GetClient(context, ctx);
-                              ctx.Status = "List...";
-                              var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
-                              Tree? root = null;
-                              IList<TreeNode> parents = new List<TreeNode>();
-                              int level = 0;
-                              foreach (var item in items)
+                              try
                               {
-                                  if(treeValue)
+                                  var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                                  var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
+                                  var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
+                                  var treeValue = tree != null ? context.ParseResult.GetValueForOption(tree) : false;
+
+                                  using var client = await GetClient(context, ctx);
+                                  ctx.Status = "List...";
+                                  var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
+                                  Tree? root = null;
+                                  IList<TreeNode> parents = new List<TreeNode>();
+                                  int level = 0;
+                                  foreach (var item in items)
                                   {
-                                      if (item.Type == FtpObjectType.Directory)
+                                      if (treeValue)
                                       {
-                                          var indeedTemp = item.FullName;
-                                          if(pathValue!= null && pathValue.Length > 0)
+                                          if (item.Type == FtpObjectType.Directory)
                                           {
-                                              indeedTemp = indeedTemp.Replace(pathValue, "");
-                                          }
-
-                                          var indeed = indeedTemp.Where(w => w == '/').Count() - 1;
-
-                                          if(indeed == 0)
-                                          {
-                                              if(root != null)
+                                              outputFile?.WriteLine(item.FullName);
+                                              var indeedTemp = item.FullName;
+                                              if (pathValue != null && pathValue.Length > 0)
                                               {
-                                                  AnsiConsole.Write(root);
+                                                  indeedTemp = indeedTemp.Replace(pathValue, "");
                                               }
-                                              root = new Tree(item.Name);
-                                              parents = new List<TreeNode>();
-                                              level = 0;
-                                          }
-                                          else
-                                          {
-                                              if(indeed == 1 && root != null)
+
+                                              var indeed = indeedTemp.Where(w => w == '/').Count() - 1;
+
+                                              if (indeed == 0)
                                               {
-                                                  parents.Add(root.AddNode(item.Name));
-                                                  level = 1;
-                                              } 
+                                                  if (root != null)
+                                                  {
+                                                      AnsiConsole.Write(root);
+                                                  }
+                                                  root = new Tree(item.Name);
+                                                  parents = new List<TreeNode>();
+                                                  level = 0;
+                                              }
                                               else
                                               {
-                                                  if(indeed > level)
+                                                  if (indeed == 1 && root != null)
                                                   {
-                                                      parents.Add(parents.Last().AddNode(item.Name));
-                                                      level++;
-                                                  } 
-                                                  else if(indeed == level)
-                                                  {
-                                                      parents.Remove(parents.Last());
-                                                      parents.Add(parents.Last().AddNode(item.Name));
+                                                      parents.Add(root.AddNode(item.Name));
+                                                      level = 1;
                                                   }
-                                                  else if(indeed < level)
+                                                  else
                                                   {
-                                                      while(level > indeed)
+                                                      if (indeed > level)
                                                       {
-                                                          level--;
-                                                          parents.Remove(parents.Last());
+                                                          parents.Add(parents.Last().AddNode(item.Name));
+                                                          level++;
                                                       }
-                                                      parents.Remove(parents.Last());
-                                                      parents.Add(parents.Last().AddNode(item.Name));
+                                                      else if (indeed == level)
+                                                      {
+                                                          parents.Remove(parents.Last());
+                                                          parents.Add(parents.Last().AddNode(item.Name));
+                                                      }
+                                                      else if (indeed < level)
+                                                      {
+                                                          while (level > indeed)
+                                                          {
+                                                              level--;
+                                                              parents.Remove(parents.Last());
+                                                          }
+                                                          parents.Remove(parents.Last());
+                                                          parents.Add(parents.Last().AddNode(item.Name));
+                                                      }
                                                   }
                                               }
                                           }
                                       }
+                                      else
+                                      {
+                                          AnsiConsole.WriteLine(item.FullName);
+                                          outputFile?.WriteLine(item.FullName);
+                                      }
+                                  }
+                                  if (treeValue && root != null)
+                                  {
+                                      AnsiConsole.Write(root);
+                                      AnsiConsole.WriteLine("Found " + items.Where(w => w.Type == FtpObjectType.Directory).Count() + " items");
                                   }
                                   else
-                                      AnsiConsole.WriteLine(item.FullName);
+                                  {
+                                      AnsiConsole.WriteLine("Found " + items.Count + " items");
+                                  }
+                                  await client.Disconnect();
                               }
-                              if (treeValue && root != null)
+                              catch (Exception ex)
                               {
-                                  AnsiConsole.Write(root);
-                                  AnsiConsole.WriteLine("Found " + items.Where(w => w.Type == FtpObjectType.Directory).Count() + " items");
+                                  AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
+                                  if (ex.InnerException != null)
+                                  {
+                                      AnsiConsole.WriteException(ex.InnerException, ExceptionFormats.ShortenEverything);
+                                  }
+                                  context.ExitCode = 1;
                               }
-                              else
-                              {
-                                  AnsiConsole.WriteLine("Found " + items.Count + " items");
-                              }
-                              await client.Disconnect();
-                          }
-                          catch (Exception ex)
-                          {
-                              AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
-                              if (ex.InnerException != null)
-                              {
-                                  AnsiConsole.WriteException(ex.InnerException, ExceptionFormats.ShortenEverything);
-                              }
-                              context.ExitCode = 1;
-                          }
+                          });
                       });
         }
 
@@ -285,38 +317,41 @@ namespace FtpCmdline
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Delete...", async ctx =>
                        {
-                           try
+                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
-                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                               try
+                               {
+                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
 
-                               using var client = await GetClient(context, ctx);
-                               ctx.Status = "Delete...";
-                               if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
-                               {
-                                   await client.DeleteDirectory(pathValue, context.GetCancellationToken());
-                                   AnsiConsole.WriteLine("Directory deleted");
+                                   using var client = await GetClient(context, ctx);
+                                   ctx.Status = "Delete...";
+                                   if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
+                                   {
+                                       await client.DeleteDirectory(pathValue, context.GetCancellationToken());
+                                       AnsiConsole.WriteLine("Directory deleted");
+                                   }
+                                   else if (await client.FileExists(pathValue, context.GetCancellationToken()))
+                                   {
+                                       await client.DeleteFile(pathValue, context.GetCancellationToken());
+                                       AnsiConsole.WriteLine("File deleted");
+                                   }
+                                   else
+                                   {
+                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       context.ExitCode = 2;
+                                   }
+                                   await client.Disconnect();
                                }
-                               else if (await client.FileExists(pathValue, context.GetCancellationToken()))
+                               catch (Exception ex)
                                {
-                                   await client.DeleteFile(pathValue, context.GetCancellationToken());
-                                   AnsiConsole.WriteLine("File deleted");
+                                   AnsiConsole.WriteLine(ex.Message);
+                                   if (ex.InnerException != null)
+                                   {
+                                       AnsiConsole.WriteLine(ex.InnerException.Message);
+                                   }
+                                   context.ExitCode = 1;
                                }
-                               else
-                               {
-                                   AnsiConsole.WriteLine("File or Directory not exists");
-                                   context.ExitCode = 2;
-                               }
-                               await client.Disconnect();
-                           }
-                           catch (Exception ex)
-                           {
-                               AnsiConsole.WriteLine(ex.Message);
-                               if (ex.InnerException != null)
-                               {
-                                   AnsiConsole.WriteLine(ex.InnerException.Message);
-                               }
-                               context.ExitCode = 1;
-                           }
+                           });
                        });
         }
 
@@ -331,40 +366,43 @@ namespace FtpCmdline
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Rename...", async ctx =>
                        {
-                           try
+                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
-                               var newPathValue = newPath != null ? context.ParseResult.GetValueForOption(newPath) : string.Empty;
-                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                               try
+                               {
+                                   var newPathValue = newPath != null ? context.ParseResult.GetValueForOption(newPath) : string.Empty;
+                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
 
-                               using var client = await GetClient(context, ctx);
-                               ctx.Status = "Rename...";
+                                   using var client = await GetClient(context, ctx);
+                                   ctx.Status = "Rename...";
 
-                               if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
-                               {
-                                   await client.MoveDirectory(pathValue, newPathValue, FtpRemoteExists.Overwrite, context.GetCancellationToken());
-                                   AnsiConsole.WriteLine("Directory renamed");
+                                   if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
+                                   {
+                                       await client.MoveDirectory(pathValue, newPathValue, FtpRemoteExists.Overwrite, context.GetCancellationToken());
+                                       AnsiConsole.WriteLine("Directory renamed");
+                                   }
+                                   else if (await client.FileExists(pathValue, context.GetCancellationToken()))
+                                   {
+                                       await client.MoveFile(pathValue, newPathValue, FtpRemoteExists.Overwrite, context.GetCancellationToken());
+                                       AnsiConsole.WriteLine("File renamed");
+                                   }
+                                   else
+                                   {
+                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       context.ExitCode = 2;
+                                   }
+                                   await client.Disconnect();
                                }
-                               else if (await client.FileExists(pathValue, context.GetCancellationToken()))
+                               catch (Exception ex)
                                {
-                                   await client.MoveFile(pathValue, newPathValue, FtpRemoteExists.Overwrite, context.GetCancellationToken());
-                                   AnsiConsole.WriteLine("File renamed");
+                                   AnsiConsole.WriteLine(ex.Message);
+                                   if (ex.InnerException != null)
+                                   {
+                                       AnsiConsole.WriteLine(ex.InnerException.Message);
+                                   }
+                                   context.ExitCode = 1;
                                }
-                               else
-                               {
-                                   AnsiConsole.WriteLine("File or Directory not exists");
-                                   context.ExitCode = 2;
-                               }
-                               await client.Disconnect();
-                           }
-                           catch (Exception ex)
-                           {
-                               AnsiConsole.WriteLine(ex.Message);
-                               if (ex.InnerException != null)
-                               {
-                                   AnsiConsole.WriteLine(ex.InnerException.Message);
-                               }
-                               context.ExitCode = 1;
-                           }
+                           });
                        });
         }
 
@@ -379,55 +417,70 @@ namespace FtpCmdline
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Prepare Upload...", async ctx =>
                        {
-                           try
+                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
-                               var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
-                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
-                               var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
-
-                               using var client = await GetClient(context, ctx);
-                               ctx.Status = "Prepare Upload...";
-
-                               Progress<FtpProgress> progress = new(p => {
-                                   ctx.Status("Upload " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.RemotePath + " " + (int)p.Progress + "%");
-                               });
-
-                               if (Directory.Exists(localPathValue))
+                               try
                                {
+                                   var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
+                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                                   var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
-                                   await client.UploadDirectory(localPathValue, pathValue,
-                                       FtpFolderSyncMode.Update,
-                                       skipValue ? FtpRemoteExists.Skip : FtpRemoteExists.Overwrite,
-                                       FtpVerify.None, null, progress,
-                                       context.GetCancellationToken());
+                                   using var client = await GetClient(context, ctx);
+                                   ctx.Status = "Prepare Upload...";
 
-                                   AnsiConsole.WriteLine("Directory uploaded");
-                                   context.ExitCode = 0;
+                                   Progress<FtpProgress> progress = new(p =>
+                                   {
+                                       ctx.Status("Upload " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.RemotePath + " " + (int)p.Progress + "%");
+                                       try
+                                       {
+                                           if (outputFile != null && (int)p.Progress == 100)
+                                           {
+                                               outputFile.WriteLine(p.RemotePath);
+                                           }
+                                       }
+                                       catch(Exception ex)
+                                       {
+                                           AnsiConsole.WriteException(ex);
+                                       }
+                                   });
+
+                                   if (Directory.Exists(localPathValue))
+                                   {
+
+                                       await client.UploadDirectory(localPathValue, pathValue,
+                                           FtpFolderSyncMode.Update,
+                                           skipValue ? FtpRemoteExists.Skip : FtpRemoteExists.Overwrite,
+                                           FtpVerify.None, null, progress,
+                                           context.GetCancellationToken());
+
+                                       AnsiConsole.WriteLine("Directory uploaded");
+                                       context.ExitCode = 0;
+                                   }
+                                   else if (System.IO.File.Exists(localPathValue))
+                                   {
+                                       await client.UploadFile(localPathValue, pathValue,
+                                           FtpRemoteExists.Overwrite,
+                                           true, FtpVerify.None,
+                                           progress, context.GetCancellationToken());
+                                       AnsiConsole.WriteLine("File uploaded");
+                                   }
+                                   else
+                                   {
+                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       context.ExitCode = 2;
+                                   }
+                                   await client.Disconnect();
                                }
-                               else if (System.IO.File.Exists(localPathValue))
+                               catch (Exception ex)
                                {
-                                   await client.UploadFile(localPathValue, pathValue, 
-                                       FtpRemoteExists.Overwrite, 
-                                       true, FtpVerify.None, 
-                                       progress, context.GetCancellationToken());
-                                   AnsiConsole.WriteLine("File uploaded");
+                                   AnsiConsole.WriteLine(ex.Message);
+                                   if (ex.InnerException != null)
+                                   {
+                                       AnsiConsole.WriteLine(ex.InnerException.Message);
+                                   }
+                                   context.ExitCode = 1;
                                }
-                               else
-                               {
-                                   AnsiConsole.WriteLine("File or Directory not exists");
-                                   context.ExitCode = 2;
-                               }
-                               await client.Disconnect();
-                           }
-                           catch (Exception ex)
-                           {
-                               AnsiConsole.WriteLine(ex.Message);
-                               if (ex.InnerException != null)
-                               {
-                                   AnsiConsole.WriteLine(ex.InnerException.Message);
-                               }
-                               context.ExitCode = 1;
-                           }
+                           });
                        });
         }
 
@@ -442,55 +495,70 @@ namespace FtpCmdline
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Prepare Download...", async ctx =>
                        {
-                           try
+                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
-                               var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
-                               var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
-                               var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
-
-                               using var client = await GetClient(context, ctx);
-                               ctx.Status = "Prepare Download...";
-
-                               Progress<FtpProgress> progress = new(p => {
-                                   ctx.Status("Download " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.LocalPath + " " + (int)p.Progress + "%");
-                               });
-
-                               if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
+                               try
                                {
+                                   var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
+                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                                   var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
-                                   await client.DownloadDirectory(localPathValue, pathValue,
-                                       FtpFolderSyncMode.Update,
-                                       skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
-                                       FtpVerify.None, null, progress,
-                                       context.GetCancellationToken());
+                                   using var client = await GetClient(context, ctx);
+                                   ctx.Status = "Prepare Download...";
 
-                                   AnsiConsole.WriteLine("Directory downloaded");
-                                   context.ExitCode = 0;
+                                   Progress<FtpProgress> progress = new(p =>
+                                   {
+                                       ctx.Status("Download " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.LocalPath + " " + (int)p.Progress + "%");
+                                       try
+                                       {
+                                           if (outputFile != null && (int)p.Progress == 100)
+                                           {
+                                               outputFile.WriteLine(p.LocalPath);
+                                           }
+                                       }
+                                       catch (Exception ex)
+                                       {
+                                           AnsiConsole.WriteException(ex);
+                                       }
+                                   });
+
+                                   if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
+                                   {
+
+                                       await client.DownloadDirectory(localPathValue, pathValue,
+                                           FtpFolderSyncMode.Update,
+                                           skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
+                                           FtpVerify.None, null, progress,
+                                           context.GetCancellationToken());
+
+                                       AnsiConsole.WriteLine("Directory downloaded");
+                                       context.ExitCode = 0;
+                                   }
+                                   else if (await client.FileExists(pathValue, context.GetCancellationToken()))
+                                   {
+                                       await client.DownloadFile(localPathValue, pathValue,
+                                           FtpLocalExists.Overwrite,
+                                           FtpVerify.None,
+                                           progress, context.GetCancellationToken());
+                                       AnsiConsole.WriteLine("File downloaded");
+                                   }
+                                   else
+                                   {
+                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       context.ExitCode = 2;
+                                   }
+                                   await client.Disconnect();
                                }
-                               else if (await client.FileExists(pathValue, context.GetCancellationToken()))
+                               catch (Exception ex)
                                {
-                                   await client.DownloadFile(localPathValue, pathValue,
-                                       FtpLocalExists.Overwrite,
-                                       FtpVerify.None,
-                                       progress, context.GetCancellationToken());
-                                   AnsiConsole.WriteLine("File downloaded");
+                                   AnsiConsole.WriteLine(ex.Message);
+                                   if (ex.InnerException != null)
+                                   {
+                                       AnsiConsole.WriteLine(ex.InnerException.Message);
+                                   }
+                                   context.ExitCode = 1;
                                }
-                               else
-                               {
-                                   AnsiConsole.WriteLine("File or Directory not exists");
-                                   context.ExitCode = 2;
-                               }
-                               await client.Disconnect();
-                           }
-                           catch (Exception ex)
-                           {
-                               AnsiConsole.WriteLine(ex.Message);
-                               if (ex.InnerException != null)
-                               {
-                                   AnsiConsole.WriteLine(ex.InnerException.Message);
-                               }
-                               context.ExitCode = 1;
-                           }
+                           });
                        });
         }
 
@@ -599,12 +667,15 @@ namespace FtpCmdline
             skip.AddAlias("-s");
             tree = new Option<bool>("--tree", () => false, "Show only directory tree");
             tree.AddAlias("-t");
+            output = new Option<string>("--output", "Result output file");
+            output.AddAlias("-o");
 
             var rootCommand = new RootCommand("FTP Helper");
 
             rootCommand.AddGlobalOption(host);
             rootCommand.AddGlobalOption(user);
             rootCommand.AddGlobalOption(pwd);
+            rootCommand.AddGlobalOption(output);
             rootCommand.AddGlobalOption(log);
 
             var listCommand = new Command("list", "List path content on host.")

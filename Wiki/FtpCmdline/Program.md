@@ -21,6 +21,7 @@ See the following package documentations <br/>[Spectre.Console](https://spectrec
 | [localPath](Program.localPath.md 'FtpCmdline.Program.localPath') | local path option |
 | [log](Program.log.md 'FtpCmdline.Program.log') | extended logging option |
 | [newPath](Program.newPath.md 'FtpCmdline.Program.newPath') | ftp new path option |
+| [output](Program.output.md 'FtpCmdline.Program.output') | result output file |
 | [path](Program.path.md 'FtpCmdline.Program.path') | ftp path option |
 | [pwd](Program.pwd.md 'FtpCmdline.Program.pwd') | ftp password  option |
 | [recursive](Program.recursive.md 'FtpCmdline.Program.recursive') | Go down the directory tree recursivly |
