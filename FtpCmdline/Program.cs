@@ -573,58 +573,63 @@ namespace FtpCmdline
                       .Spinner(Spinner.Known.Dots12)
                       .StartAsync("Clear...", async ctx =>
                       {
-                          try
+                          await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                           {
-                              var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
-                              var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
-                              var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
+                              try
+                              {
+                                  var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                                  var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
+                                  var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
 
-                              using var client = await GetClient(context, ctx);
-                              ctx.Status = "Prepare clear...";
-                              var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
-                              // delete all files
-                              var index = 1;
-                              var files = items.Where(w => w.Type == FtpObjectType.File).OrderByDescending(o => o.FullName.Length).ToList();
-                              var deleted = 0;
-                              if (files != null)
-                              {
-                                  AnsiConsole.WriteLine(files.Count + " files to delete");
-                                  foreach (var item in files)
+                                  using var client = await GetClient(context, ctx);
+                                  ctx.Status = "Prepare clear...";
+                                  var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
+                                  // delete all files
+                                  var index = 1;
+                                  var files = items.Where(w => w.Type == FtpObjectType.File).OrderByDescending(o => o.FullName.Length).ToList();
+                                  var deleted = 0;
+                                  if (files != null)
                                   {
-                                      await client.DeleteFile(item.FullName, context.GetCancellationToken());
-                                      ctx.Status("Delete file " + item.FullName + " (" + index++ + " of " + files.Count + ")");
-                                      deleted++;
-                                  }
-                              }
-                              index = 1;
-                              var directories = items.Where(w => w.Type == FtpObjectType.Directory).OrderByDescending(o => o.FullName.Length).ToList();
-                              if (directories != null)
-                              {
-                                  AnsiConsole.WriteLine(directories.Count + " directories to delete");
-                                  foreach (var item in directories)
-                                  {
-                                      var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
-                                      if (filesInPath != null && filesInPath.Count() > 0)
+                                      AnsiConsole.WriteLine(files.Count + " files to delete");
+                                      foreach (var item in files)
                                       {
-                                          continue;
+                                          await client.DeleteFile(item.FullName, context.GetCancellationToken());
+                                          ctx.Status("Delete file " + item.FullName + " (" + index++ + " of " + files.Count + ")");
+                                          outputFile?.WriteLine(item.FullName);
+                                          deleted++;
                                       }
-                                      await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
-                                      ctx.Status("Delete directory " + item.FullName + " (" + index++ + " of " + directories.Count + ")");
-                                      deleted++;
                                   }
+                                  index = 1;
+                                  var directories = items.Where(w => w.Type == FtpObjectType.Directory).OrderByDescending(o => o.FullName.Length).ToList();
+                                  if (directories != null)
+                                  {
+                                      AnsiConsole.WriteLine(directories.Count + " directories to delete");
+                                      foreach (var item in directories)
+                                      {
+                                          var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
+                                          if (filesInPath != null && filesInPath.Count() > 0)
+                                          {
+                                              continue;
+                                          }
+                                          await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
+                                          ctx.Status("Delete directory " + item.FullName + " (" + index++ + " of " + directories.Count + ")");
+                                          outputFile?.WriteLine(item.FullName);
+                                          deleted++;
+                                      }
+                                  }
+                                  AnsiConsole.WriteLine("Delete " + deleted + " of " + items.Count() + " items");
+                                  await client.Disconnect();
                               }
-                              AnsiConsole.WriteLine("Delete " + deleted + " of " +  items.Count() + " items");
-                              await client.Disconnect();
-                          }
-                          catch (Exception ex)
-                          {
-                              AnsiConsole.WriteLine(ex.Message);
-                              if (ex.InnerException != null)
+                              catch (Exception ex)
                               {
-                                  AnsiConsole.WriteLine(ex.InnerException.Message);
+                                  AnsiConsole.WriteLine(ex.Message);
+                                  if (ex.InnerException != null)
+                                  {
+                                      AnsiConsole.WriteLine(ex.InnerException.Message);
+                                  }
+                                  context.ExitCode = 1;
                               }
-                              context.ExitCode = 1;
-                          }
+                          });
                       });
         }
 
