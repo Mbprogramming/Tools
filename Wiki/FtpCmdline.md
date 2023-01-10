@@ -4,7 +4,7 @@
 
 ### Package Structure
 
-![Packages](packages.png)
+![Packages](Packages.png)
 
 ### Class Structure
 
