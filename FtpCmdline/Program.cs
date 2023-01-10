@@ -65,6 +65,10 @@ namespace FtpCmdline
         /// result output file
         /// </summary>
         internal static Option<string>? output;
+        /// <summary>
+        /// output file log level
+        /// </summary>
+        internal static Option<LogLevel>? outputLevel;
 
         private static async Task<IList<FtpListItem>> GetItems(AsyncFtpClient client, string path, IList<FtpListItem> items, bool recursive, string[]? exclude, CancellationToken token)
         {
@@ -113,6 +117,7 @@ namespace FtpCmdline
         private static async Task OutputToDo(InvocationContext context, StatusContext ctx, Func<InvocationContext, StatusContext, StreamWriter?, Task> todo)
         {
             var outputValue = output != null ? context.ParseResult.GetValueForOption(output) : string.Empty;
+ 
             StreamWriter? outputFile = null;
             if (!string.IsNullOrEmpty(outputValue))
             {
@@ -123,25 +128,33 @@ namespace FtpCmdline
             outputFile?.Dispose();
         }
 
+        private static FileLogger? logger = null;
 
         /// <summary>
         /// create and connect ftp client
         /// </summary>
         /// <param name="context">command line context</param>
         /// <param name="context2">ansi console status context</param>
+        /// <param name="outputFile">output file</param>
         /// <returns></returns>
-        internal static async Task<AsyncFtpClient> GetClient(InvocationContext context, StatusContext context2)
+        internal static async Task<AsyncFtpClient> GetClient(InvocationContext context, StatusContext context2, StreamWriter? outputFile)
         {
             try
             {
-                context2.Status = "Connecting...";
-
                 var hostValue = host != null ? context.ParseResult.GetValueForOption(host) : string.Empty;
                 var userValue = user != null ? context.ParseResult.GetValueForOption(user) : string.Empty;
                 var pwdValue = pwd != null ? context.ParseResult.GetValueForOption(pwd) : string.Empty;
                 var logValue = log != null && context.ParseResult.GetValueForOption(log);
+                var outputLevelValue = outputLevel != null ? context.ParseResult.GetValueForOption(outputLevel) : LogLevel.None;
 
-                var client = new AsyncFtpClient(hostValue, userValue, pwdValue);
+                context2.Status = "Connecting...";
+
+                if(outputFile != null)
+                {
+                    logger = new FileLogger(outputFile, outputLevelValue);
+                }
+
+                var client = new AsyncFtpClient(hostValue, userValue, pwdValue, 0, null, logger);
                 client.Config.LogToConsole = logValue;
                 await client.AutoConnect(context.GetCancellationToken());
                 
@@ -168,7 +181,7 @@ namespace FtpCmdline
                          {
                              try
                              {
-                                 using var client = await GetClient(context, ctx);
+                                 using var client = await GetClient(context, ctx, outputFile);
                                  ctx.Status = "Info...";
 
                                  AnsiConsole.WriteLine(client.ServerType.ToString());
@@ -212,7 +225,7 @@ namespace FtpCmdline
                                   var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
                                   var treeValue = tree != null ? context.ParseResult.GetValueForOption(tree) : false;
 
-                                  using var client = await GetClient(context, ctx);
+                                  using var client = await GetClient(context, ctx, outputFile);
                                   ctx.Status = "List...";
                                   var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
                                   Tree? root = null;
@@ -323,7 +336,7 @@ namespace FtpCmdline
                                {
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
 
-                                   using var client = await GetClient(context, ctx);
+                                   using var client = await GetClient(context, ctx, outputFile);
                                    ctx.Status = "Delete...";
                                    if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
                                    {
@@ -373,7 +386,7 @@ namespace FtpCmdline
                                    var newPathValue = newPath != null ? context.ParseResult.GetValueForOption(newPath) : string.Empty;
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
 
-                                   using var client = await GetClient(context, ctx);
+                                   using var client = await GetClient(context, ctx, outputFile);
                                    ctx.Status = "Rename...";
 
                                    if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
@@ -425,7 +438,7 @@ namespace FtpCmdline
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                                    var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
-                                   using var client = await GetClient(context, ctx);
+                                   using var client = await GetClient(context, ctx, outputFile);
                                    ctx.Status = "Prepare Upload...";
 
                                    Progress<FtpProgress> progress = new(p =>
@@ -503,7 +516,7 @@ namespace FtpCmdline
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                                    var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
-                                   using var client = await GetClient(context, ctx);
+                                   using var client = await GetClient(context, ctx, outputFile);
                                    ctx.Status = "Prepare Download...";
 
                                    Progress<FtpProgress> progress = new(p =>
@@ -581,7 +594,7 @@ namespace FtpCmdline
                                   var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
                                   var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
 
-                                  using var client = await GetClient(context, ctx);
+                                  using var client = await GetClient(context, ctx, outputFile);
                                   ctx.Status = "Prepare clear...";
                                   var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
                                   // delete all files
@@ -672,8 +685,9 @@ namespace FtpCmdline
             skip.AddAlias("-s");
             tree = new Option<bool>("--tree", () => false, "Show only directory tree");
             tree.AddAlias("-t");
-            output = new Option<string>("--output", "Result output file");
+            output = new Option<string>("--output", () => "", "Result output file");
             output.AddAlias("-o");
+            outputLevel = new Option<LogLevel>("--outputLevel", () => LogLevel.None, "The output file log level");
 
             var rootCommand = new RootCommand("FTP Helper");
 
@@ -681,6 +695,7 @@ namespace FtpCmdline
             rootCommand.AddGlobalOption(user);
             rootCommand.AddGlobalOption(pwd);
             rootCommand.AddGlobalOption(output);
+            rootCommand.AddGlobalOption(outputLevel);
             rootCommand.AddGlobalOption(log);
 
             var listCommand = new Command("list", "List path content on host.")

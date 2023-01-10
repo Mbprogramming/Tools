@@ -4,6 +4,54 @@
         <name>FtpCmdline</name>
     </assembly>
     <members>
+        <member name="T:FtpCmdline.FileLogger">
+            <summary>
+            file logger class for FluentFTP client
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.FileLogger.#ctor(System.IO.StreamWriter,FtpCmdline.LogLevel)">
+            <summary>
+            constructor
+            </summary>
+            <param name="writer"></param>
+            <param name="level"></param>
+        </member>
+        <member name="M:FtpCmdline.FileLogger.Log(FluentFTP.FtpLogEntry)">
+            <summary>
+            write log entry to file
+            </summary>
+            <param name="entry"></param>
+        </member>
+        <member name="T:FtpCmdline.LogLevel">
+            <summary>
+            Log Level for FluentFTP Logging in output file
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.LogLevel.None">
+            <summary>
+            No logging
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.LogLevel.Verbose">
+            <summary>
+            log all
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.LogLevel.Info">
+            <summary>
+            log infos, warnings and errors
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.LogLevel.Warn">
+            <summary>
+            log warnings and errors
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.LogLevel.Error">
+            <summary>
+            log only errors
+            </summary>
+        </member>
         <member name="T:FtpCmdline.Program">
             <summary>
             Main program implementation class and entry point
@@ -75,12 +123,18 @@
             result output file
             </summary>
         </member>
-        <member name="M:FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext)">
+        <member name="F:FtpCmdline.Program.outputLevel">
+            <summary>
+            output file log level
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext,System.IO.StreamWriter)">
             <summary>
             create and connect ftp client
             </summary>
             <param name="context">command line context</param>
             <param name="context2">ansi console status context</param>
+            <param name="outputFile">output file</param>
             <returns></returns>
         </member>
         <member name="M:FtpCmdline.Program.Info(System.CommandLine.Invocation.InvocationContext)">
