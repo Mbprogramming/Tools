@@ -2,7 +2,6 @@
 using System.CommandLine.Invocation;
 using FluentFTP;
 using Spectre.Console;
-using static System.Net.WebRequestMethods;
 
 namespace FtpCmdline
 {

@@ -2,6 +2,14 @@
 
 ## [FtpCmdline Code Documentation](FtpCmdline/FtpCmdline.md)
 
+### Package Structure
+
+![Packages](packages.png)
+
+### Class Structure
+
+![Classes](FtpCmdline.png)
+
 ## Usage 
 
 ```Ctrl + C``` to cancel current execution.
@@ -20,12 +28,14 @@ Usage:
   FtpCmdline [command] [options]
 
 Options:
-  -h, --host <host> (REQUIRED)  The FTP host
-  -u, --user <user>             The FTP user
-  -p, --pwd <pwd>               The FTP pwd
-  --log                         Show log output [default: False]
-  --version                     Show version information
-  -?, -h, --help                Show help and usage information
+  -h, --host <host> (REQUIRED)                  The FTP host
+  -u, --user <user>                             The FTP user
+  -p, --pwd <pwd>                               The FTP pwd
+  -o, --output <output>                         Result output file []
+  --outputLevel <Error|Info|None|Verbose|Warn>  The output file log level [default: None]
+  --log                                         Show log output [default: False]
+  --version                                     Show version information
+  -?, -h, --help
 
 Commands:
   list      List path content on host.
