@@ -2,7 +2,7 @@
 
 ## FTPCmdline
 
-A command line tool to perform some typical tasks related to distribution and installation of software.
+A command line tool to perform some typical tasks related to distribution and installation of software via FTP.
 
 The following tasks can be performed:
 

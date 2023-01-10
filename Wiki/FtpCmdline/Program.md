@@ -22,6 +22,7 @@ See the following package documentations <br/>[Spectre.Console](https://spectrec
 | [log](Program.log.md 'FtpCmdline.Program.log') | extended logging option |
 | [newPath](Program.newPath.md 'FtpCmdline.Program.newPath') | ftp new path option |
 | [output](Program.output.md 'FtpCmdline.Program.output') | result output file |
+| [outputLevel](Program.outputLevel.md 'FtpCmdline.Program.outputLevel') | output file log level |
 | [path](Program.path.md 'FtpCmdline.Program.path') | ftp path option |
 | [pwd](Program.pwd.md 'FtpCmdline.Program.pwd') | ftp password  option |
 | [recursive](Program.recursive.md 'FtpCmdline.Program.recursive') | Go down the directory tree recursivly |
@@ -34,7 +35,7 @@ See the following package documentations <br/>[Spectre.Console](https://spectrec
 | [Clear(InvocationContext)](Program.Clear(InvocationContext).md 'FtpCmdline.Program.Clear(System.CommandLine.Invocation.InvocationContext)') | clear items in folder |
 | [Delete(InvocationContext)](Program.Delete(InvocationContext).md 'FtpCmdline.Program.Delete(System.CommandLine.Invocation.InvocationContext)') | delete file or directory on server |
 | [Download(InvocationContext)](Program.Download(InvocationContext).md 'FtpCmdline.Program.Download(System.CommandLine.Invocation.InvocationContext)') | download folder or file |
-| [GetClient(InvocationContext, StatusContext)](Program.GetClient(InvocationContext,StatusContext).md 'FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext, Spectre.Console.StatusContext)') | create and connect ftp client |
+| [GetClient(InvocationContext, StatusContext, StreamWriter)](Program.GetClient(InvocationContext,StatusContext,StreamWriter).md 'FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext, Spectre.Console.StatusContext, System.IO.StreamWriter)') | create and connect ftp client |
 | [Info(InvocationContext)](Program.Info(InvocationContext).md 'FtpCmdline.Program.Info(System.CommandLine.Invocation.InvocationContext)') | get ftp server infos |
 | [List(InvocationContext)](Program.List(InvocationContext).md 'FtpCmdline.Program.List(System.CommandLine.Invocation.InvocationContext)') | list entries from path on server |
 | [Main(string[])](Program.Main(string[]).md 'FtpCmdline.Program.Main(string[])') | main entry point |
