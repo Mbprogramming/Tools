@@ -2,7 +2,7 @@
   "profiles": {
     "FtpCmdline": {
       "commandName": "Project",
-      "commandLineArgs": "clear --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@7 --path /transfer_ftp/HAPredNew --output c:\\temp\\test.txt --recursive true"
+      "commandLineArgs": "upload --host access805115347.webspace-data.io --user u300863897 --pwd MBprog131244_Katharina@70 --path /u99105610/CVService2/ --localPath c:\\temp\\publish\\CVService --skip true"
     }
   }
 }

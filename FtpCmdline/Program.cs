@@ -1,4 +1,5 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using FluentFTP;
 using Spectre.Console;
@@ -116,7 +117,7 @@ namespace FtpCmdline
         private static async Task OutputToDo(InvocationContext context, StatusContext ctx, Func<InvocationContext, StatusContext, StreamWriter?, Task> todo)
         {
             var outputValue = output != null ? context.ParseResult.GetValueForOption(output) : string.Empty;
- 
+
             StreamWriter? outputFile = null;
             if (!string.IsNullOrEmpty(outputValue))
             {
@@ -135,8 +136,9 @@ namespace FtpCmdline
         /// <param name="context">command line context</param>
         /// <param name="context2">ansi console status context</param>
         /// <param name="outputFile">output file</param>
+        /// <param name="supressStatus">supress status messages</param>
         /// <returns></returns>
-        internal static async Task<AsyncFtpClient> GetClient(InvocationContext context, StatusContext context2, StreamWriter? outputFile)
+        internal static async Task<AsyncFtpClient> GetClient(InvocationContext context, StatusContext context2, StreamWriter? outputFile, bool supressStatus = false)
         {
             try
             {
@@ -146,9 +148,12 @@ namespace FtpCmdline
                 var logValue = log != null && context.ParseResult.GetValueForOption(log);
                 var outputLevelValue = outputLevel != null ? context.ParseResult.GetValueForOption(outputLevel) : LogLevel.None;
 
-                context2.Status = "Connecting...";
+                if (!supressStatus)
+                {
+                    context2.Status = "Connecting...";
+                }
 
-                if(outputFile != null)
+                if (outputFile != null)
                 {
                     logger = new FileLogger(outputFile, outputLevelValue);
                 }
@@ -156,7 +161,7 @@ namespace FtpCmdline
                 var client = new AsyncFtpClient(hostValue, userValue, pwdValue, 0, null, logger);
                 client.Config.LogToConsole = logValue;
                 await client.AutoConnect(context.GetCancellationToken());
-                
+
                 return client;
             }
             catch
@@ -418,6 +423,27 @@ namespace FtpCmdline
                        });
         }
 
+        private static Tuple<IList<string>, IList<string>> IterateLocalDirectory(string localPath, IList<string>? directories, IList<string>? files)
+        {
+            var d = directories ?? new List<string>();
+            var f = files ?? new List<string>();
+
+            if (Directory.Exists(localPath))
+            {
+                d.Add(localPath);
+                foreach (var file in Directory.GetFiles(localPath))
+                {
+                    f.Add(file);
+                }
+                foreach (var dir in Directory.GetDirectories(localPath))
+                {
+                    IterateLocalDirectory(dir, d, f);
+                }
+            }
+
+            return new Tuple<IList<string>, IList<string>>(d, f);
+        }
+
         /// <summary>
         /// upload folder or file
         /// </summary>
@@ -429,6 +455,8 @@ namespace FtpCmdline
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Prepare Upload...", async ctx =>
                        {
+                           var currentFile = 1;
+                           var allFiles = 1;
                            await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
                                try
@@ -437,12 +465,11 @@ namespace FtpCmdline
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                                    var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
-                                   using var client = await GetClient(context, ctx, outputFile);
                                    ctx.Status = "Prepare Upload...";
 
                                    Progress<FtpProgress> progress = new(p =>
                                    {
-                                       ctx.Status("Upload " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.RemotePath + " " + (int)p.Progress + "%");
+                                       ctx.Status("Upload " + currentFile + " of " + allFiles + " (" + p.TransferSpeedToString() + ") " + p.RemotePath + " " + (int)p.Progress + "%");
                                        try
                                        {
                                            if (outputFile != null && (int)p.Progress == 100)
@@ -450,7 +477,7 @@ namespace FtpCmdline
                                                outputFile.WriteLine(p.RemotePath);
                                            }
                                        }
-                                       catch(Exception ex)
+                                       catch (Exception ex)
                                        {
                                            AnsiConsole.WriteException(ex);
                                        }
@@ -458,30 +485,123 @@ namespace FtpCmdline
 
                                    if (Directory.Exists(localPathValue))
                                    {
+                                       var directoryCreated = 0;
+                                       var fileUpload = 0;
+                                       var local = IterateLocalDirectory(localPathValue, null, null);
 
-                                       await client.UploadDirectory(localPathValue, pathValue,
-                                           FtpFolderSyncMode.Update,
-                                           skipValue ? FtpRemoteExists.Skip : FtpRemoteExists.Overwrite,
-                                           FtpVerify.None, null, progress,
-                                           context.GetCancellationToken());
+                                       var client = await GetClient(context, ctx, outputFile);
+                                       foreach (var d in local.Item1.OrderBy(o => o.Length).ToList())
+                                       {
+                                           if (d.Replace(localPathValue, "").Length <= 0)
+                                           {
+                                               continue;
+                                           }
+                                           var toCreate = pathValue ?? "";
+                                           if (toCreate.Last() != '/')
+                                           {
+                                               toCreate += "/";
+                                           }
 
-                                       AnsiConsole.WriteLine("Directory uploaded");
+                                           toCreate += d.Replace(localPathValue, "").Substring(1).Replace("\\", "/");
+                                           if (toCreate.Length > 0)
+                                           {
+                                               try
+                                               {
+                                                   if (!client.IsConnected)
+                                                   {
+                                                       ctx.Status("Reconnecting");
+                                                       client.Dispose();
+                                                       client = await GetClient(context, ctx, outputFile);
+                                                   }
+                                                   if (!await client.DirectoryExists(toCreate))
+                                                   {
+                                                       ctx.Status("Create Folder " + toCreate);
+                                                       await client.CreateDirectory(toCreate, context.GetCancellationToken());
+                                                   }
+                                               }
+                                               catch (Exception)
+                                               {
+                                                   if (!client.IsConnected)
+                                                   {
+                                                       ctx.Status("Reconnecting");
+                                                       client.Dispose();
+                                                       client = await GetClient(context, ctx, outputFile);
+                                                   }
+                                                   if (!await client.DirectoryExists(toCreate))
+                                                   {
+                                                       ctx.Status("Create Folder " + toCreate);
+                                                       await client.CreateDirectory(toCreate, context.GetCancellationToken());
+                                                   }
+                                               }
+                                           }
+                                           directoryCreated++;
+                                       }
+                                       await client.Disconnect();
+                                       client.Dispose();
+
+                                       allFiles = local.Item2.Count;
+                                       currentFile = 1;
+                                       foreach (var f in local.Item2.OrderBy(o => o.Length).ToList())
+                                       {
+                                           var toCopy = pathValue ?? "";
+                                           if (toCopy.Last() != '/')
+                                           {
+                                               toCopy += "/";
+                                           }
+
+                                           toCopy += f.Replace(localPathValue, "").Substring(1).Replace("\\", "/");
+                                           client = await GetClient(context, ctx, outputFile, true);
+                                           try
+                                           {
+                                               if (!client.IsConnected)
+                                               {
+                                                   ctx.Status("Reconnecting");
+                                                   client.Dispose();
+                                                   client = await GetClient(context, ctx, outputFile);
+                                               }
+                                               await client.UploadFile(f, toCopy,
+                                                                       FtpRemoteExists.Skip,
+                                                                       true, FtpVerify.None,
+                                                                       progress, context.GetCancellationToken());
+                                           }
+                                           catch (Exception)
+                                           {
+                                               if (!client.IsConnected)
+                                               {
+                                                   ctx.Status("Reconnecting");
+                                                   client.Dispose();
+                                                   client = await GetClient(context, ctx, outputFile);
+                                               }
+                                               await client.UploadFile(f, toCopy,
+                                                                       FtpRemoteExists.Skip,
+                                                                       true, FtpVerify.None,
+                                                                       progress, context.GetCancellationToken());
+                                           }
+                                           await client.Disconnect();
+                                           client.Dispose();
+                                           currentFile++;
+                                           fileUpload++;
+                                       }
+
+                                       AnsiConsole.WriteLine("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)");
                                        context.ExitCode = 0;
                                    }
                                    else if (System.IO.File.Exists(localPathValue))
                                    {
+                                       var client = await GetClient(context, ctx, outputFile);
                                        await client.UploadFile(localPathValue, pathValue,
                                            FtpRemoteExists.Overwrite,
                                            true, FtpVerify.None,
                                            progress, context.GetCancellationToken());
                                        AnsiConsole.WriteLine("File uploaded");
+                                       await client.Disconnect();
+                                       client.Dispose();
                                    }
                                    else
                                    {
                                        AnsiConsole.WriteLine("File or Directory not exists");
                                        context.ExitCode = 2;
                                    }
-                                   await client.Disconnect();
                                }
                                catch (Exception ex)
                                {
@@ -593,7 +713,7 @@ namespace FtpCmdline
                                   var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
                                   var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
 
-                                  using var client = await GetClient(context, ctx, outputFile);
+                                  var client = await GetClient(context, ctx, outputFile);
                                   ctx.Status = "Prepare clear...";
                                   var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
                                   // delete all files
@@ -605,10 +725,32 @@ namespace FtpCmdline
                                       AnsiConsole.WriteLine(files.Count + " files to delete");
                                       foreach (var item in files)
                                       {
-                                          await client.DeleteFile(item.FullName, context.GetCancellationToken());
-                                          ctx.Status("Delete file " + item.FullName + " (" + index++ + " of " + files.Count + ")");
-                                          outputFile?.WriteLine(item.FullName);
-                                          deleted++;
+                                          try
+                                          {
+                                              if (!client.IsConnected)
+                                              {
+                                                  ctx.Status("Reconnecting");
+                                                  client.Dispose();
+                                                  client = await GetClient(context, ctx, outputFile);
+                                              }
+                                              await client.DeleteFile(item.FullName, context.GetCancellationToken());
+                                              ctx.Status("Delete file " + item.FullName + " (" + index++ + " of " + files.Count + ")");
+                                              outputFile?.WriteLine(item.FullName);
+                                              deleted++;
+                                          }
+                                          catch (Exception)
+                                          {
+                                              if (!client.IsConnected)
+                                              {
+                                                  ctx.Status("Reconnecting");
+                                                  client.Dispose();
+                                                  client = await GetClient(context, ctx, outputFile);
+                                              }
+                                              await client.DeleteFile(item.FullName, context.GetCancellationToken());
+                                              ctx.Status("Delete file " + item.FullName + " (" + index++ + " of " + files.Count + ")");
+                                              outputFile?.WriteLine(item.FullName);
+                                              deleted++;
+                                          }
                                       }
                                   }
                                   index = 1;
@@ -618,19 +760,48 @@ namespace FtpCmdline
                                       AnsiConsole.WriteLine(directories.Count + " directories to delete");
                                       foreach (var item in directories)
                                       {
-                                          var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
-                                          if (filesInPath != null && filesInPath.Count() > 0)
+                                          try
                                           {
-                                              continue;
+                                              if (!client.IsConnected)
+                                              {
+                                                  ctx.Status("Reconnecting");
+                                                  client.Dispose();
+                                                  client = await GetClient(context, ctx, outputFile);
+                                              }
+                                              var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
+                                              if (filesInPath != null && filesInPath.Count() > 0)
+                                              {
+                                                  continue;
+                                              }
+                                              await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
+                                              ctx.Status("Delete directory " + item.FullName + " (" + index++ + " of " + directories.Count + ")");
+                                              outputFile?.WriteLine(item.FullName);
+                                              deleted++;
+
                                           }
-                                          await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
-                                          ctx.Status("Delete directory " + item.FullName + " (" + index++ + " of " + directories.Count + ")");
-                                          outputFile?.WriteLine(item.FullName);
-                                          deleted++;
+                                          catch (Exception)
+                                          {
+                                              if (!client.IsConnected)
+                                              {
+                                                  ctx.Status("Reconnecting");
+                                                  client.Dispose();
+                                                  client = await GetClient(context, ctx, outputFile);
+                                              }
+                                              var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
+                                              if (filesInPath != null && filesInPath.Count() > 0)
+                                              {
+                                                  continue;
+                                              }
+                                              await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
+                                              ctx.Status("Delete directory " + item.FullName + " (" + index++ + " of " + directories.Count + ")");
+                                              outputFile?.WriteLine(item.FullName);
+                                              deleted++;
+                                          }
                                       }
                                   }
                                   AnsiConsole.WriteLine("Delete " + deleted + " of " + items.Count() + " items");
                                   await client.Disconnect();
+                                  client.Dispose();
                               }
                               catch (Exception ex)
                               {
@@ -721,14 +892,14 @@ namespace FtpCmdline
             var uploadCommand = new Command("upload", "Upload file or directory to host.")
                                             {
                                                 path,
-                                                localPath, 
+                                                localPath,
                                                 skip
                                             };
 
             var downloadCommand = new Command("download", "Download file or directory from host.")
                                             {
                                                 path,
-                                                localPath, 
+                                                localPath,
                                                 skip
                                             };
 

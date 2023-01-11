@@ -128,13 +128,14 @@
             output file log level
             </summary>
         </member>
-        <member name="M:FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext,System.IO.StreamWriter)">
+        <member name="M:FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext,System.IO.StreamWriter,System.Boolean)">
             <summary>
             create and connect ftp client
             </summary>
             <param name="context">command line context</param>
             <param name="context2">ansi console status context</param>
             <param name="outputFile">output file</param>
+            <param name="supressStatus">supress status messages</param>
             <returns></returns>
         </member>
         <member name="M:FtpCmdline.Program.Info(System.CommandLine.Invocation.InvocationContext)">
