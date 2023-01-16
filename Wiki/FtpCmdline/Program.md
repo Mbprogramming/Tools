@@ -23,6 +23,7 @@ See the following package documentations <br/>[Spectre.Console](https://spectrec
 | [newPath](Program.newPath.md 'FtpCmdline.Program.newPath') | ftp new path option |
 | [output](Program.output.md 'FtpCmdline.Program.output') | result output file |
 | [outputLevel](Program.outputLevel.md 'FtpCmdline.Program.outputLevel') | output file log level |
+| [parallelTasks](Program.parallelTasks.md 'FtpCmdline.Program.parallelTasks') | count of parallel upload/download streams |
 | [path](Program.path.md 'FtpCmdline.Program.path') | ftp path option |
 | [pwd](Program.pwd.md 'FtpCmdline.Program.pwd') | ftp password  option |
 | [recursive](Program.recursive.md 'FtpCmdline.Program.recursive') | Go down the directory tree recursivly |
@@ -36,8 +37,10 @@ See the following package documentations <br/>[Spectre.Console](https://spectrec
 | [Delete(InvocationContext)](Program.Delete(InvocationContext).md 'FtpCmdline.Program.Delete(System.CommandLine.Invocation.InvocationContext)') | delete file or directory on server |
 | [Download(InvocationContext)](Program.Download(InvocationContext).md 'FtpCmdline.Program.Download(System.CommandLine.Invocation.InvocationContext)') | download folder or file |
 | [GetClient(InvocationContext, StatusContext, StreamWriter, bool)](Program.GetClient(InvocationContext,StatusContext,StreamWriter,bool).md 'FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext, Spectre.Console.StatusContext, System.IO.StreamWriter, bool)') | create and connect ftp client |
+| [GetClientProgress(InvocationContext, ProgressTask, StreamWriter, bool)](Program.GetClientProgress(InvocationContext,ProgressTask,StreamWriter,bool).md 'FtpCmdline.Program.GetClientProgress(System.CommandLine.Invocation.InvocationContext, Spectre.Console.ProgressTask, System.IO.StreamWriter, bool)') | create and connect ftp client with progress context |
 | [Info(InvocationContext)](Program.Info(InvocationContext).md 'FtpCmdline.Program.Info(System.CommandLine.Invocation.InvocationContext)') | get ftp server infos |
 | [List(InvocationContext)](Program.List(InvocationContext).md 'FtpCmdline.Program.List(System.CommandLine.Invocation.InvocationContext)') | list entries from path on server |
 | [Main(string[])](Program.Main(string[]).md 'FtpCmdline.Program.Main(string[])') | main entry point |
 | [Rename(InvocationContext)](Program.Rename(InvocationContext).md 'FtpCmdline.Program.Rename(System.CommandLine.Invocation.InvocationContext)') | rename file or directory on server |
 | [Upload(InvocationContext)](Program.Upload(InvocationContext).md 'FtpCmdline.Program.Upload(System.CommandLine.Invocation.InvocationContext)') | upload folder or file |
+| [UploadParallel(InvocationContext)](Program.UploadParallel(InvocationContext).md 'FtpCmdline.Program.UploadParallel(System.CommandLine.Invocation.InvocationContext)') | upload path parallel |
