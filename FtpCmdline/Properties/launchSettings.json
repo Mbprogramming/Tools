@@ -2,7 +2,7 @@
   "profiles": {
     "FtpCmdline": {
       "commandName": "Project",
-      "commandLineArgs": "clear --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@7 --path /transfer_ftp/HAPredNew --output c:\\temp\\test.txt --recursive true"
+      "commandLineArgs": "multiupload --host 192.168.5.67 --user mb@ehrke-bach.de --pwd Katharina@70 --path /transfer_ftp/parallel --localPath c:\\temp\\publish\\CVService --skip true --parallel 4"
     }
   }
 }
