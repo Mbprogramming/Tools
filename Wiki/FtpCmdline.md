@@ -38,13 +38,14 @@ Options:
   -?, -h, --help
 
 Commands:
-  list      List path content on host.
-  info      Get Server Infos.
-  delete    Delete file or directory on host.
-  rename    Rename file or directory on host.
-  upload    Upload file or directory to host.
-  download  Download file or directory from host.
-  clear     Clear items in folder.
+  list         List path content on host.
+  info         Get Server Infos.
+  delete       Delete file or directory on host.
+  rename       Rename file or directory on host.
+  upload       Upload file or directory to host.
+  multiupload  Upload directory to host with multiple parallel streams.
+  download     Download file or directory from host.
+  clear        Clear items in folder.
 ```
 
 ### Command *list* options
@@ -222,6 +223,35 @@ File uploaded
 ```
 
 ![Upload Progress](upload.gif)
+
+### Command *multiupload* options
+
+**FtpCmdline.exe multiupload --help**
+
+```
+Description:
+  Upload directory to host with multiple parallel streams.
+
+Usage:
+  FtpCmdline multiupload [options]
+
+Options:
+  --path <path> (REQUIRED)                      The path to start []
+  -l, --localPath <localPath>                   The local path to upload []
+  -s, --skip                                    Skip (true) or overwrite (false) existing files [default: True]
+  --parallel <parallel>                         The count of parallel upload streams [default: 1]
+  -h, --host <host> (REQUIRED)                  The FTP host
+  -u, --user <user>                             The FTP user
+  -p, --pwd <pwd>                               The FTP pwd
+  -o, --output <output>                         Result output file []
+  --outputLevel <Error|Info|None|Verbose|Warn>  The output file log level [default: None]
+  --log                                         Show log output [default: False]
+  -?, -h, --help                                Show help and usage information
+```
+
+### Command *multiupload* sample
+
+![Multi Upload Progress](multiupload.gif)
 
 ### Command *download* options
 

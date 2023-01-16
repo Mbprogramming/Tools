@@ -1,7 +1,5 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.Threading.Tasks;
 using FluentFTP;
 using Spectre.Console;
 
@@ -505,7 +503,7 @@ namespace FtpCmdline
         }
 
         /// <summary>
-        /// upload path parallel
+        /// upload path with multiple stream
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>

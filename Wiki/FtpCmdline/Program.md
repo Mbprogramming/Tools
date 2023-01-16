@@ -43,4 +43,4 @@ See the following package documentations <br/>[Spectre.Console](https://spectrec
 | [Main(string[])](Program.Main(string[]).md 'FtpCmdline.Program.Main(string[])') | main entry point |
 | [Rename(InvocationContext)](Program.Rename(InvocationContext).md 'FtpCmdline.Program.Rename(System.CommandLine.Invocation.InvocationContext)') | rename file or directory on server |
 | [Upload(InvocationContext)](Program.Upload(InvocationContext).md 'FtpCmdline.Program.Upload(System.CommandLine.Invocation.InvocationContext)') | upload folder or file |
-| [UploadParallel(InvocationContext)](Program.UploadParallel(InvocationContext).md 'FtpCmdline.Program.UploadParallel(System.CommandLine.Invocation.InvocationContext)') | upload path parallel |
+| [UploadParallel(InvocationContext)](Program.UploadParallel(InvocationContext).md 'FtpCmdline.Program.UploadParallel(System.CommandLine.Invocation.InvocationContext)') | upload path with multiple stream |

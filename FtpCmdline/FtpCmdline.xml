@@ -183,7 +183,7 @@
         </member>
         <member name="M:FtpCmdline.Program.UploadParallel(System.CommandLine.Invocation.InvocationContext)">
             <summary>
-            upload path parallel
+            upload path with multiple stream
             </summary>
             <param name="context"></param>
             <returns></returns>

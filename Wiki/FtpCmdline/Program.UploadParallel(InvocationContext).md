@@ -2,7 +2,7 @@
 
 ## Program.UploadParallel(InvocationContext) Method
 
-upload path parallel
+upload path with multiple stream
 
 ```csharp
 internal static System.Threading.Tasks.Task UploadParallel(System.CommandLine.Invocation.InvocationContext context);
