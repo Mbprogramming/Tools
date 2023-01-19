@@ -502,6 +502,20 @@ namespace FtpCmdline
             return new Tuple<IList<string>, IList<string>>(d, f);
         }
 
+        private static string TrimPad(string inStr, int length)
+        {
+            var result = inStr;
+            if(result.Length > length)
+            {
+                result = result.Substring(result.Length - length);
+            }
+            else
+            {
+                result= result.PadLeft(length);
+            }
+            return "=> " + result;
+        }
+
         /// <summary>
         /// upload path with multiple stream
         /// </summary>
@@ -580,13 +594,13 @@ namespace FtpCmdline
                                                    }
                                                    if (!await client.DirectoryExists(toCreate))
                                                    {
-                                                       mainTask.Description = "Create Folder " + toCreate;
+                                                       mainTask.Description = TrimPad("Create Folder " + toCreate, 60);
                                                        await client.CreateDirectory(toCreate, context.GetCancellationToken());
                                                        mainTask.Increment(progressValue);
                                                    }
                                                    else
                                                    {
-                                                       mainTask.Description = "Folder exists " + toCreate;
+                                                       mainTask.Description = TrimPad("Folder exists " + toCreate, 60);
                                                        mainTask.Increment(progressValue);
                                                    }
                                                }
@@ -631,20 +645,34 @@ namespace FtpCmdline
                                                }
                                            }
                                            var taskList = new List<Task>();
-                                           
+                                           var progressList = new List<double>();
+
+                                           var overallTask = ctx.AddTask(TrimPad("Overall", 60));
+                                           var refreshOverall = () =>
+                                           {
+                                               var overallProgress = progressList.Aggregate((a, b) => (a + b) / 2);
+                                               overallTask.Value = overallProgress;
+                                           };
+                                           overallTask.StartTask();
                                            for (var i = 0; i < listOfList.Count; i++)
                                            {
                                                var temp = i;
+                                               progressList.Add(0.0);
                                                taskList.Add(Task.Run(async () =>
                                                {
                                                    var localIndex = temp;
                                                    var localList = new List<string>(listOfList[localIndex]);
                                                    var increment = 100.0 / localList.Count;
                                                    var task = ctx.AddTask("Uploading ");
-                                                   task.StopTask();
+                                                   task.StartTask();
                                                    foreach (var item in localList)
                                                    {
-                                                       task.Description = item.Substring(item.LastIndexOf("\\"));
+                                                       var taskDescription = item.Substring(item.LastIndexOf("\\"));
+                                                       task.Description = TrimPad(taskDescription + "(0%)", 60);
+                                                       Progress<FtpProgress> progress = new(p =>
+                                                       {
+                                                           task.Description = TrimPad(taskDescription + "(" + (int)p.Progress + "%)", 60);
+                                                       });
                                                        var toCopy = pathValue ?? "";
                                                        if (toCopy.Last() != '/')
                                                        {
@@ -664,7 +692,7 @@ namespace FtpCmdline
                                                            await clientIntern.UploadFile(item, toCopy,
                                                                                    skipValue ? FtpRemoteExists.Skip : FtpRemoteExists.Overwrite,
                                                                                    true, FtpVerify.None,
-                                                                                   null, context.GetCancellationToken());
+                                                                                   progress, context.GetCancellationToken());
                                                        }
                                                        catch (Exception)
                                                        {
@@ -683,6 +711,8 @@ namespace FtpCmdline
                                                        await client.Disconnect();
                                                        client.Dispose();
                                                        task.Increment(increment);
+                                                       progressList[localIndex] = task.Value;
+                                                       refreshOverall();
                                                    }
                                                    task.Value = 100.0;
                                                    task.StopTask();
@@ -690,6 +720,7 @@ namespace FtpCmdline
                                            }
                                            await Task.WhenAll(taskList);
                                            fileUpload = allFiles;
+                                           overallTask.StopTask();
                                        }
                                        else
                                        {
