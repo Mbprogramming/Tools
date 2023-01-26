@@ -581,7 +581,7 @@ namespace FtpCmdline
                                                toCreate += "/";
                                            }
 
-                                           toCreate += d.Replace(localPathValue, "").Substring(1).Replace("\\", "/");
+                                           toCreate += d.Replace(localPathValue, "")[1..].Replace("\\", "/");
                                            if (toCreate.Length > 0)
                                            {
                                                try
@@ -604,8 +604,9 @@ namespace FtpCmdline
                                                        mainTask.Increment(progressValue);
                                                    }
                                                }
-                                               catch (Exception)
+                                               catch (Exception ex)
                                                {
+                                                   AnsiConsole.WriteException(ex);
                                                    if (!client.IsConnected)
                                                    {
                                                        mainTask.Description = "Reconnecting";
@@ -646,12 +647,27 @@ namespace FtpCmdline
                                            }
                                            var taskList = new List<Task>();
                                            var progressList = new List<double>();
+                                           object lockObj = new object();
 
                                            var overallTask = ctx.AddTask(TrimPad("Overall", 60));
                                            var refreshOverall = () =>
                                            {
-                                               var overallProgress = progressList.Aggregate((a, b) => (a + b) / 2);
-                                               overallTask.Value = overallProgress;
+                                               try
+                                               {
+                                                   var overallProgress = double.MinValue;
+                                                   lock (lockObj)
+                                                   {
+                                                       overallProgress = progressList.Aggregate((a, b) => (a + b) / 2);
+                                                   }
+                                                   if (overallProgress > double.MinValue)
+                                                   {
+                                                       overallTask.Value = overallProgress;
+                                                   }
+                                               }
+                                               catch (Exception ex)
+                                               {
+                                                   AnsiConsole.WriteException(ex);
+                                               }
                                            };
                                            overallTask.StartTask();
                                            for (var i = 0; i < listOfList.Count; i++)
@@ -679,7 +695,7 @@ namespace FtpCmdline
                                                            toCopy += "/";
                                                        }
 
-                                                       toCopy += item.Replace(localPathValue, "").Substring(1).Replace("\\", "/");
+                                                       toCopy += item.Replace(localPathValue, "")[1..].Replace("\\", "/");
                                                        var clientIntern = await GetClientProgress(context, mainTask, outputFile, true);
                                                        try
                                                        {
@@ -694,8 +710,9 @@ namespace FtpCmdline
                                                                                    true, FtpVerify.None,
                                                                                    progress, context.GetCancellationToken());
                                                        }
-                                                       catch (Exception)
+                                                       catch (Exception ex)
                                                        {
+                                                           AnsiConsole.WriteException(ex);
                                                            if (!client.IsConnected)
                                                            {
                                                                mainTask.Description = "Reconnecting";
@@ -711,7 +728,10 @@ namespace FtpCmdline
                                                        await client.Disconnect();
                                                        client.Dispose();
                                                        task.Increment(increment);
-                                                       progressList[localIndex] = task.Value;
+                                                       lock (lockObj)
+                                                       {
+                                                           progressList[localIndex] = task.Value;
+                                                       }   
                                                        refreshOverall();
                                                    }
                                                    task.Value = 100.0;
@@ -747,8 +767,9 @@ namespace FtpCmdline
                                                                            true, FtpVerify.None,
                                                                            progress, context.GetCancellationToken());
                                                }
-                                               catch (Exception)
+                                               catch (Exception ex)
                                                {
+                                                   AnsiConsole.WriteException(ex);
                                                    if (!client.IsConnected)
                                                    {
                                                        mainTask.Description = "Reconnecting";
@@ -789,10 +810,10 @@ namespace FtpCmdline
                                }
                                catch (Exception ex)
                                {
-                                   AnsiConsole.WriteLine(ex.Message);
+                                   AnsiConsole.WriteException(ex);
                                    if (ex.InnerException != null)
                                    {
-                                       AnsiConsole.WriteLine(ex.InnerException.Message);
+                                       AnsiConsole.WriteException(ex.InnerException);
                                    }
                                    context.ExitCode = 1;
                                }
