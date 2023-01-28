@@ -202,6 +202,13 @@
             <param name="context">command line context</param>
             <returns></returns>
         </member>
+        <member name="M:FtpCmdline.Program.DownloadParallel(System.CommandLine.Invocation.InvocationContext)">
+            <summary>
+            download folder or file with parallel streams
+            </summary>
+            <param name="context">command line context</param>
+            <returns></returns>
+        </member>
         <member name="M:FtpCmdline.Program.Clear(System.CommandLine.Invocation.InvocationContext)">
             <summary>
             clear items in folder

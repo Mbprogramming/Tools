@@ -505,13 +505,13 @@ namespace FtpCmdline
         private static string TrimPad(string inStr, int length)
         {
             var result = inStr;
-            if(result.Length > length)
+            if (result.Length > length)
             {
                 result = result.Substring(result.Length - length);
             }
             else
             {
-                result= result.PadLeft(length);
+                result = result.PadLeft(length);
             }
             return "=> " + result;
         }
@@ -731,7 +731,7 @@ namespace FtpCmdline
                                                        lock (lockObj)
                                                        {
                                                            progressList[localIndex] = task.Value;
-                                                       }   
+                                                       }
                                                        refreshOverall();
                                                    }
                                                    task.Value = 100.0;
@@ -1012,7 +1012,6 @@ namespace FtpCmdline
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                                    var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
-                                   var parallelTaskValue = parallelTasks != null ? context.ParseResult.GetValueForOption(parallelTasks) : 1;
 
                                    using var client = await GetClient(context, ctx, outputFile);
                                    ctx.Status = "Prepare Download...";
@@ -1035,7 +1034,6 @@ namespace FtpCmdline
 
                                    if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
                                    {
-
                                        await client.DownloadDirectory(localPathValue, pathValue,
                                            FtpFolderSyncMode.Update,
                                            skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
@@ -1059,6 +1057,215 @@ namespace FtpCmdline
                                        context.ExitCode = 2;
                                    }
                                    await client.Disconnect();
+                               }
+                               catch (Exception ex)
+                               {
+                                   AnsiConsole.WriteLine(ex.Message);
+                                   if (ex.InnerException != null)
+                                   {
+                                       AnsiConsole.WriteLine(ex.InnerException.Message);
+                                   }
+                                   context.ExitCode = 1;
+                               }
+                           });
+                       });
+        }
+
+        /// <summary>
+        /// download folder or file with parallel streams
+        /// </summary>
+        /// <param name="context">command line context</param>
+        /// <returns></returns>
+        internal static async Task DownloadParallel(InvocationContext context)
+        {
+            await AnsiConsole.Progress()
+                       .AutoClear(true)
+                       .StartAsync(async ctx =>
+                       {
+                           var mainTask = ctx.AddTask("Starting...");
+                           mainTask.StartTask();
+                           await OutputToDoProgress(context, ctx, async (context, ctx, outputFile) =>
+                           {
+                               try
+                               {
+                                   var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
+                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
+                                   var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
+                                   var parallelTaskValue = parallelTasks != null ? context.ParseResult.GetValueForOption(parallelTasks) : 1;
+
+                                   var client = await GetClientProgress(context, mainTask, outputFile);
+                                   mainTask.Description = "Prepare Download...";
+
+                                   Progress<FtpProgress> progress = new(p =>
+                                   {
+                                       mainTask.Description = "Download " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.LocalPath + " " + (int)p.Progress + "%";
+                                       try
+                                       {
+                                           if (outputFile != null && (int)p.Progress == 100)
+                                           {
+                                               outputFile.WriteLine(p.LocalPath);
+                                           }
+                                       }
+                                       catch (Exception ex)
+                                       {
+                                           AnsiConsole.WriteException(ex);
+                                       }
+                                   });
+
+                                   if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
+                                   {
+                                       mainTask.Description = "Count files to download...";
+                                       var items = (await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), true, null, context.GetCancellationToken()))
+                                                    .Where(w => w.Type == FtpObjectType.File).ToList();
+
+                                       if (items.Count >= 20)
+                                       {
+                                           await client.Disconnect();
+                                           client.Dispose();
+
+                                           if (parallelTaskValue > 1 && items.Count > 20)
+                                           {
+                                               var countPerTask = items.Count / parallelTaskValue;
+                                               var listOfList = new List<List<string>>();
+
+                                               for (var i = 0; i < parallelTaskValue; i++)
+                                               {
+                                                   if (i == parallelTaskValue - 1)
+                                                   {
+                                                       var newList = items.Skip(i * countPerTask).ToList();
+                                                       listOfList.Add(newList.Where(w => w.Type == FtpObjectType.File).Select(s => s.FullName).ToList());
+                                                   }
+                                                   else
+                                                   {
+                                                       var newList = items.Skip(i * countPerTask).Take(countPerTask).ToList();
+                                                       listOfList.Add(newList.Where(w => w.Type == FtpObjectType.File).Select(s => s.FullName).ToList());
+                                                   }
+                                               }
+                                               var taskList = new List<Task>();
+                                               var progressList = new List<double>();
+                                               object lockObj = new();
+
+                                               var overallTask = ctx.AddTask(TrimPad("Overall", 60));
+                                               var refreshOverall = () =>
+                                               {
+                                                   try
+                                                   {
+                                                       var overallProgress = double.MinValue;
+                                                       lock (lockObj)
+                                                       {
+                                                           overallProgress = progressList.Aggregate((a, b) => (a + b) / 2);
+                                                       }
+                                                       if (overallProgress > double.MinValue)
+                                                       {
+                                                           overallTask.Value = overallProgress;
+                                                       }
+                                                   }
+                                                   catch (Exception ex)
+                                                   {
+                                                       AnsiConsole.WriteException(ex);
+                                                   }
+                                               };
+                                               overallTask.StartTask();
+                                               for (var i = 0; i < listOfList.Count; i++)
+                                               {
+                                                   var temp = i;
+                                                   progressList.Add(0.0);
+                                                   taskList.Add(Task.Run(async () =>
+                                                   {
+                                                       var localIndex = temp;
+                                                       var localList = new List<string>(listOfList[localIndex]);
+                                                       var increment = 100.0 / localList.Count;
+                                                       var task = ctx.AddTask("Downloading ");
+                                                       task.StartTask();
+                                                       foreach (var item in localList)
+                                                       {
+                                                           var taskDescription = item.Substring(item.LastIndexOf("/"));
+                                                           task.Description = TrimPad(taskDescription + "(0%)", 60);
+                                                           Progress<FtpProgress> progress = new(p =>
+                                                           {
+                                                               task.Description = TrimPad(taskDescription + "(" + (int)p.Progress + "%)", 60);
+                                                           });
+                                                           var toCopy = localPathValue + item.Replace("/", "\\");
+                                                           var clientIntern = await GetClientProgress(context, mainTask, outputFile, true);
+                                                           try
+                                                           {
+                                                               if (!clientIntern.IsConnected)
+                                                               {
+                                                                   mainTask.Description = "Reconnecting";
+                                                                   clientIntern.Dispose();
+                                                                   clientIntern = await GetClientProgress(context, mainTask, outputFile);
+                                                               }
+                                                               await clientIntern.DownloadFile(toCopy, item,
+                                                                                        skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
+                                                                                        FtpVerify.None,
+                                                                                        progress, context.GetCancellationToken());
+                                                           }
+                                                           catch (Exception ex)
+                                                           {
+                                                               AnsiConsole.WriteException(ex);
+                                                               AnsiConsole.WriteLine(toCopy);
+                                                               if(ex.InnerException != null)
+                                                               {
+                                                                   AnsiConsole.WriteException(ex.InnerException);
+                                                               }
+                                                               if (!clientIntern.IsConnected)
+                                                               {
+                                                                   mainTask.Description = "Reconnecting";
+                                                                   client.Dispose();
+                                                                   client = await GetClientProgress(context, mainTask, outputFile);
+                                                               }
+                                                               await clientIntern.DownloadFile(toCopy, item,
+                                                                                         skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
+                                                                                         FtpVerify.None,
+                                                                                         progress, context.GetCancellationToken());
+                                                           }
+                                                           await clientIntern.Disconnect();
+                                                           clientIntern.Dispose();
+                                                           task.Increment(increment);
+                                                           lock (lockObj)
+                                                           {
+                                                               progressList[localIndex] = task.Value;
+                                                           }
+                                                           refreshOverall();
+                                                       }
+                                                       task.Value = 100.0;
+                                                       task.StopTask();
+                                                   }));
+                                               }
+                                               await Task.WhenAll(taskList);
+                                               overallTask.StopTask();
+                                           }
+                                           AnsiConsole.WriteLine("Directory downloaded");
+                                           context.ExitCode = 0;
+                                           return;
+                                       }
+                                       else
+                                       {
+                                           await client.DownloadDirectory(localPathValue, pathValue,
+                                               FtpFolderSyncMode.Update,
+                                               skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
+                                               FtpVerify.None, null, progress,
+                                               context.GetCancellationToken());
+                                       }
+                                       AnsiConsole.WriteLine("Directory downloaded");
+                                       context.ExitCode = 0;
+                                   }
+                                   else if (await client.FileExists(pathValue, context.GetCancellationToken()))
+                                   {
+                                       await client.DownloadFile(localPathValue, pathValue,
+                                           skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
+                                           FtpVerify.None,
+                                           progress, context.GetCancellationToken());
+                                       AnsiConsole.WriteLine("File downloaded");
+                                   }
+                                   else
+                                   {
+                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       context.ExitCode = 2;
+                                   }
+                                   await client.Disconnect();
+                                   client.Dispose();
+                                   client = null;
                                }
                                catch (Exception ex)
                                {
@@ -1291,6 +1498,14 @@ namespace FtpCmdline
                                                 skip
                                             };
 
+            var downloadParallelCommand = new Command("multidownload", "Download file or directory from host with multiple parallel streams.")
+                                            {
+                                                path,
+                                                localPath,
+                                                skip,
+                                                parallelTasks
+                                            };
+
             var clearCommand = new Command("clear", "Clear items in folder.")
                                             {
                                                 path,
@@ -1305,6 +1520,7 @@ namespace FtpCmdline
             rootCommand.AddCommand(uploadCommand);
             rootCommand.AddCommand(uploadParallelCommand);
             rootCommand.AddCommand(downloadCommand);
+            rootCommand.AddCommand(downloadParallelCommand);
             rootCommand.AddCommand(clearCommand);
 
             infoCommand.SetHandler(Info);
@@ -1314,6 +1530,7 @@ namespace FtpCmdline
             uploadCommand.SetHandler(Upload);
             uploadParallelCommand.SetHandler(UploadParallel);
             downloadCommand.SetHandler(Download);
+            downloadParallelCommand.SetHandler(DownloadParallel);
             clearCommand.SetHandler(Clear);
 
             return await rootCommand.InvokeAsync(args);
