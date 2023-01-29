@@ -647,7 +647,7 @@ namespace FtpCmdline
                                            }
                                            var taskList = new List<Task>();
                                            var progressList = new List<double>();
-                                           object lockObj = new object();
+                                           object lockObj = new();
 
                                            var overallTask = ctx.AddTask(TrimPad("Overall", 60));
                                            var refreshOverall = () =>
@@ -1084,6 +1084,7 @@ namespace FtpCmdline
                        {
                            var mainTask = ctx.AddTask("Starting...");
                            mainTask.StartTask();
+                           mainTask.Value = 25;
                            await OutputToDoProgress(context, ctx, async (context, ctx, outputFile) =>
                            {
                                try
@@ -1095,6 +1096,7 @@ namespace FtpCmdline
 
                                    var client = await GetClientProgress(context, mainTask, outputFile);
                                    mainTask.Description = "Prepare Download...";
+                                   mainTask.Value = 50;
 
                                    Progress<FtpProgress> progress = new(p =>
                                    {
@@ -1120,6 +1122,9 @@ namespace FtpCmdline
 
                                        if (items.Count >= 20)
                                        {
+                                           mainTask.Description = "Download...";
+                                           mainTask.Value = 75;
+
                                            await client.Disconnect();
                                            client.Dispose();
 
@@ -1235,34 +1240,44 @@ namespace FtpCmdline
                                                await Task.WhenAll(taskList);
                                                overallTask.StopTask();
                                            }
+                                           mainTask.Value = 100;
                                            AnsiConsole.WriteLine("Directory downloaded");
                                            context.ExitCode = 0;
                                            return;
                                        }
                                        else
                                        {
+                                           mainTask.Description = "Download...";
+                                           mainTask.Value = 75;
+
                                            await client.DownloadDirectory(localPathValue, pathValue,
                                                FtpFolderSyncMode.Update,
                                                skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                                FtpVerify.None, null, progress,
                                                context.GetCancellationToken());
                                        }
+                                       mainTask.Value = 100;
                                        AnsiConsole.WriteLine("Directory downloaded");
                                        context.ExitCode = 0;
                                    }
                                    else if (await client.FileExists(pathValue, context.GetCancellationToken()))
                                    {
+                                       mainTask.Description = "Download...";
+                                       mainTask.Value = 75;
+
                                        await client.DownloadFile(localPathValue, pathValue,
                                            skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                            FtpVerify.None,
                                            progress, context.GetCancellationToken());
                                        AnsiConsole.WriteLine("File downloaded");
+                                       mainTask.Value = 100;
                                    }
                                    else
                                    {
                                        AnsiConsole.WriteLine("File or Directory not exists");
                                        context.ExitCode = 2;
                                    }
+                                   mainTask.Value = 100;
                                    await client.Disconnect();
                                    client.Dispose();
                                    client = null;
