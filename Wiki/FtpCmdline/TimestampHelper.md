@@ -15,7 +15,11 @@ Implements [System.IDisposable](https://docs.microsoft.com/en-us/dotnet/api/Syst
 
 | Constructors | |
 | :--- | :--- |
-| [TimestampHelper()](TimestampHelper.TimestampHelper().md 'FtpCmdline.TimestampHelper.TimestampHelper()') | constructor |
+| [TimestampHelper(StreamWriter)](TimestampHelper.TimestampHelper(StreamWriter).md 'FtpCmdline.TimestampHelper.TimestampHelper(System.IO.StreamWriter)') | constructor |
+
+| Properties | |
+| :--- | :--- |
+| [output](TimestampHelper.output.md 'FtpCmdline.TimestampHelper.output') | output file |
 
 | Methods | |
 | :--- | :--- |

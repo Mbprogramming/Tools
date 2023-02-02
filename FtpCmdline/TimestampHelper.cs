@@ -12,16 +12,23 @@ namespace FtpCmdline
     /// </summary>
     public class TimestampHelper : IDisposable
     {
+        /// <summary>
+        /// output file
+        /// </summary>
+        public StreamWriter? output { get; set; }
+
         private DateTimeOffset _timestamp;
         /// <summary>
         /// constructor
         /// </summary>
+        /// <param name="_output"></param>
         /// <remarks>
         /// starts the timer
         /// </remarks>
-        public TimestampHelper() 
+        public TimestampHelper(StreamWriter? _output) 
         {
             _timestamp = DateTimeOffset.Now;
+            output = _output;
         }
 
         /// <summary>
@@ -29,7 +36,12 @@ namespace FtpCmdline
         /// </summary>
         public void Dispose()
         {
-            AnsiConsole.WriteLine($"Duration {DateTimeOffset.Now - _timestamp}");
+            var ts = $"Duration {DateTimeOffset.Now - _timestamp}";
+            if (output != null)
+            {
+                output.WriteLine(ts);
+            }
+            AnsiConsole.WriteLine(ts);
         }
     }
 }

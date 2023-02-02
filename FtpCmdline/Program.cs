@@ -235,13 +235,13 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Info(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                      .Spinner(Spinner.Known.Dots12)
                      .StartAsync("Info...", async ctx =>
                      {
                          await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                          {
+                             using var timestampHelper = new TimestampHelper(outputFile);
                              try
                              {
                                  using var client = await GetClient(context, ctx, outputFile);
@@ -275,13 +275,13 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task List(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                       .Spinner(Spinner.Known.Dots12)
                       .StartAsync("List...", async ctx =>
                       {
                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                           {
+                              using var timestampHelper = new TimestampHelper(outputFile);
                               try
                               {
                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
@@ -390,13 +390,13 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Delete(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Delete...", async ctx =>
                        {
                            await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
+                               using var timestampHelper = new TimestampHelper(outputFile);
                                try
                                {
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
@@ -440,13 +440,13 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Rename(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Rename...", async ctx =>
                        {
                            await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
+                               using var timestampHelper = new TimestampHelper(outputFile);
                                try
                                {
                                    var newPathValue = newPath != null ? context.ParseResult.GetValueForOption(newPath) : string.Empty;
@@ -527,7 +527,6 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task UploadParallel(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Progress()
                        .AutoClear(true)
                        .StartAsync(async ctx =>
@@ -538,6 +537,7 @@ namespace FtpCmdline
                            var allFiles = 1;
                            await OutputToDoProgress(context, ctx, async (context, ctx, outputFile) =>
                            {
+                               using var timestampHelper = new TimestampHelper(outputFile);
                                try
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
@@ -835,7 +835,6 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Upload(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Prepare Upload...", async ctx =>
@@ -844,6 +843,7 @@ namespace FtpCmdline
                            var allFiles = 1;
                            await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
+                               using var timestampHelper = new TimestampHelper(outputFile);
                                try
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
@@ -1007,13 +1007,13 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Download(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Prepare Download...", async ctx =>
                        {
                            await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                            {
+                               using var timestampHelper = new TimestampHelper(outputFile);
                                try
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
@@ -1085,7 +1085,6 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task DownloadParallel(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Progress()
                        .AutoClear(true)
                        .StartAsync(async ctx =>
@@ -1095,6 +1094,7 @@ namespace FtpCmdline
                            mainTask.Value = 25;
                            await OutputToDoProgress(context, ctx, async (context, ctx, outputFile) =>
                            {
+                               using var timestampHelper = new TimestampHelper(outputFile);
                                try
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
@@ -1157,6 +1157,7 @@ namespace FtpCmdline
                                                var taskList = new List<Task>();
                                                var progressList = new List<double>();
                                                object lockObj = new();
+                                               object lockObj2 = new();
 
                                                var overallTask = ctx.AddTask(TrimPad("Overall", 60));
                                                var refreshOverall = () =>
@@ -1212,6 +1213,13 @@ namespace FtpCmdline
                                                                                         skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                                                                         FtpVerify.None,
                                                                                         progress, context.GetCancellationToken());
+                                                               if (outputFile != null)
+                                                               {
+                                                                   lock (lockObj2)
+                                                                   {
+                                                                       outputFile.WriteLine($"Download({localIndex}) {item} => {toCopy}");
+                                                                   }
+                                                               }
                                                            }
                                                            catch (Exception ex)
                                                            {
@@ -1310,13 +1318,13 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Clear(InvocationContext context)
         {
-            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                       .Spinner(Spinner.Known.Dots12)
                       .StartAsync("Clear...", async ctx =>
                       {
                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
                           {
+                              using var timestampHelper = new TimestampHelper(outputFile);
                               try
                               {
                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;

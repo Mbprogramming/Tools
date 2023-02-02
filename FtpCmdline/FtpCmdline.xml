@@ -231,10 +231,16 @@
             Timestamp Helper
             </summary>
         </member>
-        <member name="M:FtpCmdline.TimestampHelper.#ctor">
+        <member name="P:FtpCmdline.TimestampHelper.output">
+            <summary>
+            output file
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.TimestampHelper.#ctor(System.IO.StreamWriter)">
             <summary>
             constructor
             </summary>
+            <param name="_output"></param>
             <remarks>
             starts the timer
             </remarks>
