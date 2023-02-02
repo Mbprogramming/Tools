@@ -235,6 +235,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Info(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                      .Spinner(Spinner.Known.Dots12)
                      .StartAsync("Info...", async ctx =>
@@ -274,6 +275,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task List(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                       .Spinner(Spinner.Known.Dots12)
                       .StartAsync("List...", async ctx =>
@@ -388,6 +390,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Delete(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Delete...", async ctx =>
@@ -437,6 +440,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Rename(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Rename...", async ctx =>
@@ -523,6 +527,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task UploadParallel(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Progress()
                        .AutoClear(true)
                        .StartAsync(async ctx =>
@@ -830,6 +835,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Upload(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Prepare Upload...", async ctx =>
@@ -1001,6 +1007,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Download(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Prepare Download...", async ctx =>
@@ -1078,6 +1085,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task DownloadParallel(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Progress()
                        .AutoClear(true)
                        .StartAsync(async ctx =>
@@ -1302,6 +1310,7 @@ namespace FtpCmdline
         /// <returns></returns>
         internal static async Task Clear(InvocationContext context)
         {
+            using var timestampHelper = new TimestampHelper();
             await AnsiConsole.Status()
                       .Spinner(Spinner.Known.Dots12)
                       .StartAsync("Clear...", async ctx =>

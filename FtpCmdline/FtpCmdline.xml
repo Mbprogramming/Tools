@@ -226,5 +226,23 @@
             <param name="args">command line parameter</param>
             <returns></returns>
         </member>
+        <member name="T:FtpCmdline.TimestampHelper">
+            <summary>
+            Timestamp Helper
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.TimestampHelper.#ctor">
+            <summary>
+            constructor
+            </summary>
+            <remarks>
+            starts the timer
+            </remarks>
+        </member>
+        <member name="M:FtpCmdline.TimestampHelper.Dispose">
+            <summary>
+            stops the timer and output duration
+            </summary>
+        </member>
     </members>
 </doc>
