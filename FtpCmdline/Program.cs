@@ -121,130 +121,41 @@ namespace FtpCmdline
             return items;
         }
 
-        private static async Task OutputToDo(InvocationContext context, StatusContext ctx, Func<InvocationContext, StatusContext, StreamWriter?, Task> todo)
+        private static async Task OutputToDo(InvocationContext context, StatusContext ctx, Func<InvocationContext, StatusContext, Logger, Task> todo)
         {
-            var outputValue = output != null ? context.ParseResult.GetValueForOption(output) : string.Empty;
-
-            StreamWriter? outputFile = null;
-            if (!string.IsNullOrEmpty(outputValue))
-            {
-                if (File.Exists(outputValue))
-                {
-                    outputFile = File.AppendText(outputValue);
-                }
-                else
-                {
-                    outputFile = File.CreateText(outputValue);
-                }
-            }
-            await todo(context, ctx, outputFile);
-            outputFile?.Close();
-            outputFile?.Dispose();
+            using var logger = new Logger(context, output, outputLevel, log);
+            await todo(context, ctx, logger);
         }
 
-        private static async Task OutputToDoProgress(InvocationContext context, ProgressContext ctx, Func<InvocationContext, ProgressContext, StreamWriter?, Task> todo)
+        private static async Task OutputToDoProgress(InvocationContext context, ProgressContext ctx, Func<InvocationContext, ProgressContext, Logger, Task> todo)
         {
-            var outputValue = output != null ? context.ParseResult.GetValueForOption(output) : string.Empty;
-            logLevel = outputLevel != null ? context.ParseResult.GetValueForOption(outputLevel) : LogLevel.Error;
-
-            StreamWriter? outputFile = null;
-            if (!string.IsNullOrEmpty(outputValue))
-            {
-                if (File.Exists(outputValue))
-                {
-                    outputFile = File.AppendText(outputValue);
-                }
-                else
-                {
-                    outputFile = File.CreateText(outputValue);
-                }
-            }
-            await todo(context, ctx, outputFile);
-            outputFile?.Close();
-            outputFile?.Dispose();
+            using var logger = new Logger(context, output, outputLevel, log);
+            await todo(context, ctx, logger);
         }
-
-        private static List<string> messages = new List<string>();
-
-        private static void LogErrorToFile(string message, StreamWriter? output)
-        {
-            if(output != null && logLevel >= LogLevel.Error)
-            {
-                lock (outputLock)
-                {
-                    messages.Add(message);
-                }
-            }
-        }
-
-        private static void LogWarnToFile(string message, StreamWriter? output)
-        {
-            if (output != null && logLevel >= LogLevel.Warn)
-            {
-                lock (outputLock)
-                {
-                    messages.Add(message);
-                }
-            }
-        }
-
-        private static void LogInfoToFile(string message, StreamWriter? output)
-        {
-            if (output != null && logLevel >= LogLevel.Info)
-            {
-                lock (outputLock)
-                {
-                    messages.Add(message);
-                }
-            }
-        }
-
-        private static void LogVerboseToFile(string message, StreamWriter? output)
-        {
-            if (output != null && logLevel >= LogLevel.Verbose)
-            {
-                lock (outputLock)
-                {
-                    messages.Add(message);
-                }
-            }
-        }
-
-
-        private static FileLogger? logger = null;
-        private static LogLevel logLevel = LogLevel.Error;
-        private static object outputLock = new();
 
         /// <summary>
         /// create and connect ftp client
         /// </summary>
         /// <param name="context">command line context</param>
-        /// <param name="context2">ansi console status context</param>
-        /// <param name="outputFile">output file</param>
+        /// <param name="context2">Ansi console status context</param>
+        /// <param name="logger">output file</param>
         /// <param name="supressStatus">supress status messages</param>
         /// <returns></returns>
-        internal static async Task<AsyncFtpClient> GetClient(InvocationContext context, StatusContext context2, StreamWriter? outputFile, bool supressStatus = false)
+        internal static async Task<AsyncFtpClient> GetClient(InvocationContext context, StatusContext context2, Logger logger, bool supressStatus = false)
         {
             try
             {
                 var hostValue = host != null ? context.ParseResult.GetValueForOption(host) : string.Empty;
                 var userValue = user != null ? context.ParseResult.GetValueForOption(user) : string.Empty;
                 var pwdValue = pwd != null ? context.ParseResult.GetValueForOption(pwd) : string.Empty;
-                var logValue = log != null && context.ParseResult.GetValueForOption(log);
-                var outputLevelValue = outputLevel != null ? context.ParseResult.GetValueForOption(outputLevel) : LogLevel.None;
 
                 if (!supressStatus)
                 {
                     context2.Status = "Connecting...";
                 }
 
-                if (outputFile != null)
-                {
-                    logger = new FileLogger(outputFile, outputLevelValue);
-                }
-
                 var client = new AsyncFtpClient(hostValue, userValue, pwdValue, 0, null, logger);
-                client.Config.LogToConsole = logValue;
+                client.Config.LogToConsole = logger.LogToConsole;
                 await client.AutoConnect(context.GetCancellationToken());
 
                 return client;
@@ -260,18 +171,16 @@ namespace FtpCmdline
         /// </summary>
         /// <param name="context">command line context</param>
         /// <param name="task">progress task</param>
-        /// <param name="outputFile">output file</param>
+        /// <param name="logger">output file</param>
         /// <param name="supressStatus">supress status messages</param>
         /// <returns></returns>
-        internal static async Task<AsyncFtpClient> GetClientProgress(InvocationContext context, ProgressTask task, StreamWriter? outputFile, bool supressStatus = false)
+        internal static async Task<AsyncFtpClient> GetClientProgress(InvocationContext context, ProgressTask task, Logger logger, bool supressStatus = false)
         {
             try
             {
                 var hostValue = host != null ? context.ParseResult.GetValueForOption(host) : string.Empty;
                 var userValue = user != null ? context.ParseResult.GetValueForOption(user) : string.Empty;
                 var pwdValue = pwd != null ? context.ParseResult.GetValueForOption(pwd) : string.Empty;
-                var logValue = log != null && context.ParseResult.GetValueForOption(log);
-                var outputLevelValue = outputLevel != null ? context.ParseResult.GetValueForOption(outputLevel) : LogLevel.None;
 
                 if (!supressStatus)
                 {
@@ -279,13 +188,8 @@ namespace FtpCmdline
                     task.Value = 50.0;
                 }
 
-                if (outputFile != null)
-                {
-                    logger = new FileLogger(outputFile, outputLevelValue);
-                }
-
                 var client = new AsyncFtpClient(hostValue, userValue, pwdValue, 0, null, logger);
-                client.Config.LogToConsole = logValue;
+                client.Config.LogToConsole = logger.LogToConsole;
                 await client.AutoConnect(context.GetCancellationToken());
 
                 return client;
@@ -345,30 +249,25 @@ namespace FtpCmdline
                      .Spinner(Spinner.Known.Dots12)
                      .StartAsync("Info...", async ctx =>
                      {
-                         await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
+                         await OutputToDo(context, ctx, async (context, ctx, logger) =>
                          {
-                             using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                             using var timestampHelper = new TimestampHelper(logger);
                              try
                              {
-                                 using var client = await GetClient(context, ctx, outputFile);
+                                 using var client = await GetClient(context, ctx, logger);
                                  ctx.Status = "Info...";
 
-                                 AnsiConsole.WriteLine(client.ServerType.ToString());
-                                 AnsiConsole.WriteLine(client.ServerOS.ToString());
-
-                                 LogInfoToFile(client.ServerType.ToString(), outputFile);
-                                 LogInfoToFile(client.ServerOS.ToString(), outputFile);
+                                 logger.LogInfo(client.ServerType.ToString());
+                                 logger.LogInfo(client.ServerOS.ToString());
 
                                  await client.Disconnect();
                              }
                              catch (Exception ex)
                              {
-                                 AnsiConsole.WriteLine(ex.Message);
-                                 LogErrorToFile(ex.Message, outputFile);
+                                 logger.LogError(ex.Message);
                                  if (ex.InnerException != null)
                                  {
-                                     AnsiConsole.WriteLine(ex.InnerException.Message);
-                                     LogErrorToFile(ex.InnerException.Message, outputFile);
+                                     logger.LogError(ex.InnerException.Message);
                                  }
                                  context.ExitCode = 1;
                              }
@@ -387,9 +286,9 @@ namespace FtpCmdline
                       .Spinner(Spinner.Known.Dots12)
                       .StartAsync("List...", async ctx =>
                       {
-                          await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
+                          await OutputToDo(context, ctx, async (context, ctx, logger) =>
                           {
-                              using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                              using var timestampHelper = new TimestampHelper(logger);
                               try
                               {
                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
@@ -397,7 +296,7 @@ namespace FtpCmdline
                                   var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
                                   var treeValue = tree != null && context.ParseResult.GetValueForOption(tree);
 
-                                  using var client = await GetClient(context, ctx, outputFile);
+                                  using var client = await GetClient(context, ctx, logger);
                                   ctx.Status = "List...";
                                   var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
                                   Tree? root = null;
@@ -409,7 +308,7 @@ namespace FtpCmdline
                                       {
                                           if (item.Type == FtpObjectType.Directory)
                                           {
-                                              LogInfoToFile(item.FullName, outputFile);
+                                              logger.LogInfo(item.FullName);
                                               var indeedTemp = item.FullName;
                                               if (pathValue != null && pathValue.Length > 0)
                                               {
@@ -422,7 +321,7 @@ namespace FtpCmdline
                                               {
                                                   if (root != null)
                                                   {
-                                                      AnsiConsole.Write(root);
+                                                      logger.LogInfo(root.ToString());
                                                   }
                                                   root = new Tree(item.Name);
                                                   parents = new List<TreeNode>();
@@ -463,30 +362,25 @@ namespace FtpCmdline
                                       }
                                       else
                                       {
-                                          AnsiConsole.WriteLine(item.FullName);
-                                          LogInfoToFile(item.FullName, outputFile);
+                                          logger.LogInfo(item.FullName);
                                       }
                                   }
                                   if (treeValue && root != null)
                                   {
-                                      AnsiConsole.Write(root);
-                                      AnsiConsole.WriteLine("Found " + items.Where(w => w.Type == FtpObjectType.Directory).Count() + " items");
-                                      LogInfoToFile("Found " + items.Where(w => w.Type == FtpObjectType.Directory).Count() + " items", outputFile);                                  }
+                                      logger.LogInfo(root.ToString());
+                                      logger.LogInfo("Found " + items.Where(w => w.Type == FtpObjectType.Directory).Count() + " items");                                  }
                                   else
                                   {
-                                      AnsiConsole.WriteLine("Found " + items.Count + " items");
-                                      LogInfoToFile("Found " + items.Count + " items", outputFile);
+                                      logger.LogInfo("Found " + items.Count + " items");
                                   }
                                   await client.Disconnect();
                               }
                               catch (Exception ex)
                               {
-                                  AnsiConsole.WriteException(ex, ExceptionFormats.ShortenEverything);
-                                  LogErrorToFile(ex.Message, outputFile);
+                                  logger.LogError(ex.Message);
                                   if (ex.InnerException != null)
                                   {
-                                      AnsiConsole.WriteException(ex.InnerException, ExceptionFormats.ShortenEverything);
-                                      LogErrorToFile(ex.InnerException.Message, outputFile);
+                                      logger.LogError(ex.InnerException.Message);
                                   }
                                   context.ExitCode = 1;
                               }
@@ -505,45 +399,40 @@ namespace FtpCmdline
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Delete...", async ctx =>
                        {
-                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
+                           await OutputToDo(context, ctx, async (context, ctx, logger) =>
                            {
-                               using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                               using var timestampHelper = new TimestampHelper(logger);
                                try
                                {
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
 
-                                   using var client = await GetClient(context, ctx, outputFile);
+                                   using var client = await GetClient(context, ctx, logger);
                                    ctx.Status = "Delete...";
                                    if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
                                    {
-                                       LogVerboseToFile("Try to delete folder " + pathValue, outputFile);
+                                       logger.LogVerbose("Try to delete folder " + pathValue);
                                        await client.DeleteDirectory(pathValue, context.GetCancellationToken());
-                                       AnsiConsole.WriteLine("Directory deleted");
-                                       LogInfoToFile("Folder deleted " + pathValue, outputFile);
+                                       logger.LogInfo("Folder deleted " + pathValue);
                                    }
                                    else if (await client.FileExists(pathValue, context.GetCancellationToken()))
                                    {
-                                       LogVerboseToFile("Try to delete file " + pathValue, outputFile);
+                                       logger.LogVerbose("Try to delete file " + pathValue);
                                        await client.DeleteFile(pathValue, context.GetCancellationToken());
-                                       AnsiConsole.WriteLine("File deleted");
-                                       LogInfoToFile("File deleted " + pathValue, outputFile);
+                                       logger.LogInfo("File deleted " + pathValue);
                                    }
                                    else
                                    {
-                                       AnsiConsole.WriteLine("File or Directory not exists");
-                                       LogWarnToFile("File or Directory not exists", outputFile);
+                                       logger.LogWarn("File or Directory not exists");
                                        context.ExitCode = 2;
                                    }
                                    await client.Disconnect();
                                }
                                catch (Exception ex)
                                {
-                                   AnsiConsole.WriteLine(ex.Message);
-                                   LogErrorToFile(ex.Message, outputFile);
+                                   logger.LogError(ex.Message);
                                    if (ex.InnerException != null)
                                    {
-                                       AnsiConsole.WriteLine(ex.InnerException.Message);
-                                       LogErrorToFile(ex.InnerException.Message, outputFile);
+                                       logger.LogError(ex.InnerException.Message);
                                    }
                                    context.ExitCode = 1;
                                }
@@ -562,47 +451,42 @@ namespace FtpCmdline
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Rename...", async ctx =>
                        {
-                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
+                           await OutputToDo(context, ctx, async (context, ctx, logger) =>
                            {
-                               using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                               using var timestampHelper = new TimestampHelper(logger);
                                try
                                {
                                    var newPathValue = newPath != null ? context.ParseResult.GetValueForOption(newPath) : string.Empty;
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
 
-                                   using var client = await GetClient(context, ctx, outputFile);
+                                   using var client = await GetClient(context, ctx, logger);
                                    ctx.Status = "Rename...";
 
                                    if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
                                    {
-                                       LogVerboseToFile("Try to rename folder " + pathValue + " to " + newPathValue, outputFile);
+                                       logger.LogVerbose("Try to rename folder " + pathValue + " to " + newPathValue);
                                        await client.MoveDirectory(pathValue, newPathValue, FtpRemoteExists.Overwrite, context.GetCancellationToken());
-                                       LogInfoToFile("Folder renamed from " + pathValue + " to " + newPathValue, outputFile);
-                                       AnsiConsole.WriteLine("Directory renamed");
+                                       logger.LogInfo("Folder renamed from " + pathValue + " to " + newPathValue);
                                    }
                                    else if (await client.FileExists(pathValue, context.GetCancellationToken()))
                                    {
-                                       LogVerboseToFile("Try to rename file " + pathValue + " to " + newPathValue, outputFile);
+                                       logger.LogVerbose("Try to rename file " + pathValue + " to " + newPathValue);
                                        await client.MoveFile(pathValue, newPathValue, FtpRemoteExists.Overwrite, context.GetCancellationToken());
-                                       LogInfoToFile("File renamed from " + pathValue + " to " + newPathValue, outputFile);
-                                       AnsiConsole.WriteLine("File renamed");
+                                       logger.LogInfo("File renamed from " + pathValue + " to " + newPathValue);
                                    }
                                    else
                                    {
-                                       LogWarnToFile("File or directory not exists", outputFile);
-                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       logger.LogWarn("File or directory not exists");
                                        context.ExitCode = 2;
                                    }
                                    await client.Disconnect();
                                }
                                catch (Exception ex)
                                {
-                                   AnsiConsole.WriteLine(ex.Message);
-                                   LogErrorToFile(ex.Message, outputFile);
+                                   logger.LogError(ex.Message);
                                    if (ex.InnerException != null)
                                    {
-                                       AnsiConsole.WriteLine(ex.InnerException.Message);
-                                       LogErrorToFile(ex.InnerException.Message, outputFile);
+                                       logger.LogError(ex.InnerException.Message);
                                    }
                                    context.ExitCode = 1;
                                }
@@ -625,9 +509,9 @@ namespace FtpCmdline
                            mainTask.StartTask();
                            var currentFile = 1;
                            var allFiles = 1;
-                           await OutputToDoProgress(context, ctx, async (context, ctx, outputFile) =>
+                           await OutputToDoProgress(context, ctx, async (context, ctx, logger) =>
                            {
-                               using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                               using var timestampHelper = new TimestampHelper(logger);
                                try
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
@@ -645,17 +529,15 @@ namespace FtpCmdline
                                        {
                                            if ((int)p.Progress == 100)
                                            {
-                                               LogInfoToFile("Upload " + p.RemotePath, outputFile);
+                                               logger.LogInfo("Upload " + p.RemotePath);
                                            }
                                        }
                                        catch (Exception ex)
                                        {
-                                           LogErrorToFile(ex.Message, outputFile);
-                                           AnsiConsole.WriteException(ex);
+                                           logger.LogError(ex.Message);
                                            if(ex.InnerException != null)
                                            {
-                                               LogErrorToFile(ex.InnerException.Message, outputFile);
-                                               AnsiConsole.WriteException(ex.InnerException);
+                                               logger.LogError(ex.InnerException.Message);
                                            }
                                        }
                                    });
@@ -669,7 +551,7 @@ namespace FtpCmdline
                                        // Create folder
                                        var progressValue = 100 / local.Item1.Count;
                                        mainTask.Value = 0.0;
-                                       var client = await GetClientProgress(context, mainTask, outputFile);
+                                       var client = await GetClientProgress(context, mainTask, logger);
                                        foreach (var d in local.Item1.OrderBy(o => o.Length).ToList())
                                        {
                                            if (d.Replace(localPathValue, "").Length <= 0)
@@ -689,48 +571,48 @@ namespace FtpCmdline
                                                {
                                                    if (!client.IsConnected)
                                                    {
-                                                       LogWarnToFile("Reconnect client", outputFile);
+                                                       // TODO: disable screen output
+                                                       logger.LogWarn("Reconnect client");
                                                        mainTask.Description = "Reconnecting";
                                                        client.Dispose();
-                                                       client = await GetClientProgress(context, mainTask, outputFile);
+                                                       client = await GetClientProgress(context, mainTask, logger);
                                                    }
                                                    if (!await client.DirectoryExists(toCreate))
                                                    {
-                                                       LogVerboseToFile("Try to create " + toCreate, outputFile);
+                                                       logger.LogVerbose("Try to create " + toCreate);
                                                        mainTask.Description = TrimPad("Create Folder " + toCreate, 60);
                                                        await client.CreateDirectory(toCreate, context.GetCancellationToken());
                                                        mainTask.Increment(progressValue);
-                                                       LogInfoToFile("Create folder " + toCreate, outputFile);
+                                                       logger.LogInfo("Create folder " + toCreate);
                                                    }
                                                    else
                                                    {
                                                        mainTask.Description = TrimPad("Folder exists " + toCreate, 60);
                                                        mainTask.Increment(progressValue);
-                                                       LogInfoToFile("Folder exists " + toCreate, outputFile);
+                                                       logger.LogInfo("Folder exists " + toCreate);
                                                    }
                                                }
                                                catch (Exception ex)
                                                {
-                                                   AnsiConsole.WriteException(ex);
-                                                   LogErrorToFile(ex.Message, outputFile);
+                                                   logger.LogError(ex.Message);
                                                    if (ex.InnerException != null)
                                                    {
-                                                       LogErrorToFile(ex.InnerException.Message, outputFile);
+                                                       logger.LogError(ex.InnerException.Message);
                                                        AnsiConsole.WriteException(ex.InnerException);
                                                    }
                                                    if (!client.IsConnected)
                                                    {
-                                                       LogWarnToFile("Reconnect client", outputFile);
+                                                       logger.LogWarn("Reconnect client");
                                                        mainTask.Description = "Reconnecting";
                                                        client.Dispose();
-                                                       client = await GetClientProgress(context, mainTask, outputFile);
+                                                       client = await GetClientProgress(context, mainTask, logger);
                                                    }
                                                    if (!await client.DirectoryExists(toCreate))
                                                    {
-                                                       LogVerboseToFile("Try to create " + toCreate, outputFile);
+                                                       logger.LogVerbose("Try to create " + toCreate);
                                                        mainTask.Description = "Create Folder " + toCreate;
                                                        await client.CreateDirectory(toCreate, context.GetCancellationToken());
-                                                       LogInfoToFile("Create folder " + toCreate, outputFile);
+                                                       logger.LogInfo("Create folder " + toCreate);
                                                    }
                                                }
                                            }
@@ -752,13 +634,13 @@ namespace FtpCmdline
                                                {
                                                    var newList = local.Item2.Skip(i * countPerTask).ToList();
                                                    listOfList.Add(newList);
-                                                   LogVerboseToFile("Create new parallel list with " + newList.Count + " items", outputFile);
+                                                   logger.LogVerbose("Create new parallel list with " + newList.Count + " items");
                                                }
                                                else
                                                {
                                                    var newList = local.Item2.Skip(i * countPerTask).Take(countPerTask).ToList();
                                                    listOfList.Add(newList);
-                                                   LogVerboseToFile("Create new parallel list with " + newList.Count + " items", outputFile);
+                                                   logger.LogVerbose("Create new parallel list with " + newList.Count + " items");
                                                }
                                            }
                                            var taskList = new List<Task>();
@@ -782,8 +664,7 @@ namespace FtpCmdline
                                                }
                                                catch (Exception ex)
                                                {
-                                                   AnsiConsole.WriteException(ex);
-                                                   LogErrorToFile(ex.Message, outputFile);
+                                                   logger.LogError(ex.Message);
                                                }
                                            };
                                            overallTask.StartTask();
@@ -813,40 +694,39 @@ namespace FtpCmdline
                                                        }
 
                                                        toCopy += item.Replace(localPathValue, "")[1..].Replace("\\", "/");
-                                                       var clientIntern = await GetClientProgress(context, mainTask, outputFile, true);
+                                                       var clientIntern = await GetClientProgress(context, mainTask, logger, true);
                                                        try
                                                        {
                                                            if (!clientIntern.IsConnected)
                                                            {
-                                                               LogWarnToFile("Reconnect client (" + localIndex + ")", outputFile);
+                                                               logger.LogWarn("Reconnect client (" + localIndex + ")");
                                                                mainTask.Description = "Reconnecting";
                                                                clientIntern.Dispose();
-                                                               clientIntern = await GetClientProgress(context, mainTask, outputFile);
+                                                               clientIntern = await GetClientProgress(context, mainTask, logger);
                                                            }
-                                                           LogVerboseToFile("Try to upload (" + localIndex + ") " + toCopy, outputFile);
+                                                           logger.LogVerbose("Try to upload (" + localIndex + ") " + toCopy);
                                                            await clientIntern.UploadFile(item, toCopy,
                                                                                    skipValue ? FtpRemoteExists.Skip : FtpRemoteExists.Overwrite,
                                                                                    true, FtpVerify.None,
                                                                                    progress, context.GetCancellationToken());
-                                                           LogInfoToFile("Uploaded (" + localIndex + ") " + toCopy, outputFile);
+                                                           logger.LogInfo("Uploaded (" + localIndex + ") " + toCopy);
                                                        }
                                                        catch (Exception ex)
                                                        {
-                                                           AnsiConsole.WriteException(ex);
-                                                           LogErrorToFile(ex.Message + "(" + localIndex + ") ", outputFile);
+                                                           logger.LogError(ex.Message + "(" + localIndex + ") ");
                                                            if (!client.IsConnected)
                                                            {
-                                                               LogWarnToFile("Reconnect client (" + localIndex + ")", outputFile);
+                                                               logger.LogWarn("Reconnect client (" + localIndex + ")");
                                                                mainTask.Description = "Reconnecting";
                                                                client.Dispose();
-                                                               client = await GetClientProgress(context, mainTask, outputFile);
+                                                               client = await GetClientProgress(context, mainTask, logger);
                                                            }
-                                                           LogVerboseToFile("Try to upload (" + localIndex + ") " + toCopy, outputFile);
+                                                           logger.LogVerbose("Try to upload (" + localIndex + ") " + toCopy);
                                                            await clientIntern.UploadFile(item, toCopy,
                                                                                    skipValue ? FtpRemoteExists.Skip : FtpRemoteExists.Overwrite,
                                                                                    true, FtpVerify.None,
                                                                                    null, context.GetCancellationToken());
-                                                           LogInfoToFile("Uploaded (" + localIndex + ") " + toCopy, outputFile);
+                                                           logger.LogInfo("Uploaded (" + localIndex + ") " + toCopy);
                                                        }
                                                        await client.Disconnect();
                                                        client.Dispose();
@@ -867,7 +747,7 @@ namespace FtpCmdline
                                        }
                                        else
                                        {
-                                           LogVerboseToFile("Single threaded upload", outputFile);
+                                           logger.LogVerbose("Single threaded upload");
                                            foreach (var f in local.Item2.OrderBy(o => o.Length).ToList())
                                            {
                                                var toCopy = pathValue ?? "";
@@ -877,40 +757,40 @@ namespace FtpCmdline
                                                }
 
                                                toCopy += f.Replace(localPathValue, "").Substring(1).Replace("\\", "/");
-                                               client = await GetClientProgress(context, mainTask, outputFile, true);
+                                               client = await GetClientProgress(context, mainTask, logger, true);
                                                try
                                                {
                                                    if (!client.IsConnected)
                                                    {
-                                                       LogWarnToFile("Reconnect client", outputFile);
+                                                       logger.LogWarn("Reconnect client");
                                                        mainTask.Description = "Reconnecting";
                                                        client.Dispose();
-                                                       client = await GetClientProgress(context, mainTask, outputFile);
+                                                       client = await GetClientProgress(context, mainTask, logger);
                                                    }
-                                                   LogVerboseToFile("Try to upload " + toCopy, outputFile);
+                                                   logger.LogVerbose("Try to upload " + toCopy);
                                                    await client.UploadFile(f, toCopy,
                                                                            FtpRemoteExists.Skip,
                                                                            true, FtpVerify.None,
                                                                            progress, context.GetCancellationToken());
-                                                   LogInfoToFile("Uploaded file " + toCopy, outputFile);
+                                                   logger.LogInfo("Uploaded file " + toCopy);
                                                }
                                                catch (Exception ex)
                                                {
                                                    AnsiConsole.WriteException(ex);
-                                                   LogErrorToFile(ex.Message, outputFile);
+                                                   logger.LogError(ex.Message);
                                                    if (!client.IsConnected)
                                                    {
-                                                       LogWarnToFile("Reconnect client", outputFile);
+                                                       logger.LogWarn("Reconnect client");
                                                        mainTask.Description = "Reconnecting";
                                                        client.Dispose();
-                                                       client = await GetClientProgress(context, mainTask, outputFile);
+                                                       client = await GetClientProgress(context, mainTask, logger);
                                                    }
-                                                   LogVerboseToFile("Try to upload " + toCopy, outputFile);
+                                                   logger.LogVerbose("Try to upload " + toCopy);
                                                    await client.UploadFile(f, toCopy,
                                                                            FtpRemoteExists.Skip,
                                                                            true, FtpVerify.None,
                                                                            progress, context.GetCancellationToken());
-                                                   LogInfoToFile("Uploaded file " + toCopy, outputFile);
+                                                   logger.LogInfo("Uploaded file " + toCopy);
                                                }
                                                await client.Disconnect();
                                                client.Dispose();
@@ -919,38 +799,33 @@ namespace FtpCmdline
                                            }
                                        }
 
-                                       AnsiConsole.WriteLine("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)");
-                                       LogInfoToFile("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)", outputFile);
+                                       logger.LogInfo("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)");
                                        context.ExitCode = 0;
                                    }
                                    else if (System.IO.File.Exists(localPathValue))
                                    {
-                                       var client = await GetClientProgress(context, mainTask, outputFile);
-                                       LogVerboseToFile("Try to upload file " + localPathValue + " to " + pathValue, outputFile);
+                                       var client = await GetClientProgress(context, mainTask, logger);
+                                       logger.LogVerbose("Try to upload file " + localPathValue + " to " + pathValue);
                                        await client.UploadFile(localPathValue, pathValue,
                                            FtpRemoteExists.Overwrite,
                                            true, FtpVerify.None,
                                            progress, context.GetCancellationToken());
-                                       LogInfoToFile("File uploaded from " + localPathValue + " to " + pathValue, outputFile);
-                                       AnsiConsole.WriteLine("File uploaded");
+                                       logger.LogInfo("File uploaded from " + localPathValue + " to " + pathValue);
                                        await client.Disconnect();
                                        client.Dispose();
                                    }
                                    else
                                    {
-                                       LogWarnToFile("File not exists " + localPathValue, outputFile);
-                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       logger.LogWarn("File not exists " + localPathValue);
                                        context.ExitCode = 2;
                                    }
                                }
                                catch (Exception ex)
                                {
-                                   AnsiConsole.WriteException(ex);
-                                   LogErrorToFile(ex.Message, outputFile);
+                                   logger.LogError(ex.Message);
                                    if (ex.InnerException != null)
                                    {
-                                       AnsiConsole.WriteException(ex.InnerException);
-                                       LogErrorToFile(ex.InnerException.Message, outputFile);
+                                       logger.LogError(ex.InnerException.Message);
                                    }
                                    context.ExitCode = 1;
                                }
@@ -973,9 +848,9 @@ namespace FtpCmdline
                        {
                            var currentFile = 1;
                            var allFiles = 1;
-                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
+                           await OutputToDo(context, ctx, async (context, ctx, logger) =>
                            {
-                               using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                               using var timestampHelper = new TimestampHelper(logger);
                                try
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
@@ -991,17 +866,15 @@ namespace FtpCmdline
                                        {
                                            if ((int)p.Progress == 100)
                                            {
-                                               LogInfoToFile("Upload " + p.RemotePath, outputFile);
+                                               logger.LogInfo("Upload " + p.RemotePath);
                                            }
                                        }
                                        catch (Exception ex)
                                        {
-                                           LogErrorToFile(ex.Message, outputFile);
-                                           AnsiConsole.WriteException(ex);
+                                           logger.LogError(ex.Message);
                                            if (ex.InnerException != null)
                                            {
-                                               LogErrorToFile(ex.InnerException.Message, outputFile);
-                                               AnsiConsole.WriteException(ex.InnerException);
+                                               logger.LogError(ex.InnerException.Message);
                                            }
                                        }
                                    });
@@ -1013,7 +886,7 @@ namespace FtpCmdline
                                        var local = IterateLocalDirectory(localPathValue, null, null);
 
                                        // Create folder
-                                       var client = await GetClient(context, ctx, outputFile);
+                                       var client = await GetClient(context, ctx, logger);
                                        foreach (var d in local.Item1.OrderBy(o => o.Length).ToList())
                                        {
                                            if (d.Replace(localPathValue, "").Length <= 0)
@@ -1035,7 +908,7 @@ namespace FtpCmdline
                                                    {
                                                        ctx.Status("Reconnecting");
                                                        client.Dispose();
-                                                       client = await GetClient(context, ctx, outputFile);
+                                                       client = await GetClient(context, ctx, logger);
                                                    }
                                                    if (!await client.DirectoryExists(toCreate))
                                                    {
@@ -1049,7 +922,7 @@ namespace FtpCmdline
                                                    {
                                                        ctx.Status("Reconnecting");
                                                        client.Dispose();
-                                                       client = await GetClient(context, ctx, outputFile);
+                                                       client = await GetClient(context, ctx, logger);
                                                    }
                                                    if (!await client.DirectoryExists(toCreate))
                                                    {
@@ -1072,45 +945,43 @@ namespace FtpCmdline
                                            }
 
                                            toCopy += f.Replace(localPathValue, "").Substring(1).Replace("\\", "/");
-                                           client = await GetClient(context, ctx, outputFile, true);
+                                           client = await GetClient(context, ctx, logger, true);
                                            try
                                            {
                                                if (!client.IsConnected)
                                                {
-                                                   LogWarnToFile("Reconnect client", outputFile);
+                                                   logger.LogWarn("Reconnect client");
                                                    ctx.Status("Reconnecting");
                                                    client.Dispose();
-                                                   client = await GetClient(context, ctx, outputFile);
+                                                   client = await GetClient(context, ctx, logger);
                                                }
-                                               LogVerboseToFile("Try to copy " + toCopy, outputFile);
+                                               logger.LogVerbose("Try to copy " + toCopy);
                                                await client.UploadFile(f, toCopy,
                                                                        FtpRemoteExists.Skip,
                                                                        true, FtpVerify.None,
                                                                        progress, context.GetCancellationToken());
-                                               LogInfoToFile("Copy " + toCopy, outputFile);
+                                               logger.LogInfo("Copy " + toCopy);
                                            }
                                            catch (Exception ex)
                                            {
-                                               AnsiConsole.WriteException(ex);
-                                               LogErrorToFile(ex.Message, outputFile);
+                                               logger.LogError(ex.Message);
                                                if (ex.InnerException != null)
                                                {
-                                                   LogErrorToFile(ex.InnerException.Message, outputFile);
-                                                   AnsiConsole.WriteException(ex.InnerException);
+                                                   logger.LogError(ex.InnerException.Message);
                                                }
                                                if (!client.IsConnected)
                                                {
-                                                   LogWarnToFile("Reconnect client", outputFile);
+                                                   logger.LogWarn("Reconnect client");
                                                    ctx.Status("Reconnecting");
                                                    client.Dispose();
-                                                   client = await GetClient(context, ctx, outputFile);
+                                                   client = await GetClient(context, ctx, logger);
                                                }
-                                               LogVerboseToFile("Try to copy " + toCopy, outputFile);
+                                               logger.LogVerbose("Try to copy " + toCopy);
                                                await client.UploadFile(f, toCopy,
                                                                        FtpRemoteExists.Skip,
                                                                        true, FtpVerify.None,
                                                                        progress, context.GetCancellationToken());
-                                               LogInfoToFile("Copy " + toCopy, outputFile);
+                                               logger.LogInfo("Copy " + toCopy);
                                            }
                                            await client.Disconnect();
                                            client.Dispose();
@@ -1118,38 +989,33 @@ namespace FtpCmdline
                                            fileUpload++;
                                        }
 
-                                       AnsiConsole.WriteLine("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)");
-                                       LogInfoToFile("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)", outputFile);
+                                       logger.LogInfo("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)");
                                        context.ExitCode = 0;
                                    }
                                    else if (System.IO.File.Exists(localPathValue))
                                    {
-                                       var client = await GetClient(context, ctx, outputFile);
-                                       LogVerboseToFile("Try to copy " + localPathValue, outputFile);
+                                       var client = await GetClient(context, ctx, logger);
+                                       logger.LogVerbose("Try to copy " + localPathValue);
                                        await client.UploadFile(localPathValue, pathValue,
                                            FtpRemoteExists.Overwrite,
                                            true, FtpVerify.None,
                                            progress, context.GetCancellationToken());
-                                       LogInfoToFile("Copy " + localPathValue, outputFile);
-                                       AnsiConsole.WriteLine("File uploaded");
+                                       logger.LogInfo("Copy " + localPathValue);
                                        await client.Disconnect();
                                        client.Dispose();
                                    }
                                    else
                                    {
-                                       LogWarnToFile("File not exists " + localPathValue, outputFile);
-                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       logger.LogWarn("File not exists " + localPathValue);
                                        context.ExitCode = 2;
                                    }
                                }
                                catch (Exception ex)
                                {
-                                   AnsiConsole.WriteException(ex);
-                                   LogErrorToFile(ex.Message, outputFile);
+                                   logger.LogError(ex.Message);
                                    if (ex.InnerException != null)
                                    {
-                                       AnsiConsole.WriteException(ex.InnerException);
-                                       LogErrorToFile(ex.InnerException.Message, outputFile);
+                                       logger.LogError(ex.InnerException.Message);
                                    }
                                    context.ExitCode = 1;
                                }
@@ -1168,16 +1034,16 @@ namespace FtpCmdline
                        .Spinner(Spinner.Known.Dots12)
                        .StartAsync("Prepare Download...", async ctx =>
                        {
-                           await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
+                           await OutputToDo(context, ctx, async (context, ctx, logger) =>
                            {
-                               using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                               using var timestampHelper = new TimestampHelper(logger);
                                try
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                                    var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
-                                   using var client = await GetClient(context, ctx, outputFile);
+                                   using var client = await GetClient(context, ctx, logger);
                                    ctx.Status = "Prepare Download...";
 
                                    Progress<FtpProgress> progress = new(p =>
@@ -1187,7 +1053,7 @@ namespace FtpCmdline
                                        {
                                            if ((int)p.Progress == 100)
                                            {
-                                               LogInfoToFile("Upload " + p.RemotePath, outputFile);
+                                               logger.LogInfo("Upload " + p.RemotePath);
                                            }
                                        }
                                        catch (Exception ex)
@@ -1198,42 +1064,37 @@ namespace FtpCmdline
 
                                    if (await client.DirectoryExists(pathValue, context.GetCancellationToken()))
                                    {
-                                       LogVerboseToFile("Try to download folder " + pathValue, outputFile);
+                                       logger.LogVerbose("Try to download folder " + pathValue);
                                        await client.DownloadDirectory(localPathValue, pathValue,
                                            FtpFolderSyncMode.Update,
                                            skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                            FtpVerify.None, null, progress,
                                            context.GetCancellationToken());
-                                       LogInfoToFile("Folder downloaded " + pathValue, outputFile);
-                                       AnsiConsole.WriteLine("Directory downloaded");
+                                       logger.LogInfo("Folder downloaded " + pathValue);
                                        context.ExitCode = 0;
                                    }
                                    else if (await client.FileExists(pathValue, context.GetCancellationToken()))
                                    {
-                                       LogVerboseToFile("Try to download file " + pathValue, outputFile);
+                                       logger.LogVerbose("Try to download file " + pathValue);
                                        await client.DownloadFile(localPathValue, pathValue,
                                            FtpLocalExists.Overwrite,
                                            FtpVerify.None,
                                            progress, context.GetCancellationToken());
-                                       LogInfoToFile("File downloaded " + pathValue, outputFile);
-                                       AnsiConsole.WriteLine("File downloaded");
+                                       logger.LogInfo("File downloaded " + pathValue);
                                    }
                                    else
                                    {
-                                       LogWarnToFile("File or Directory not exists", outputFile);
-                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       logger.LogWarn("File or Directory not exists");
                                        context.ExitCode = 2;
                                    }
                                    await client.Disconnect();
                                }
                                catch (Exception ex)
                                {
-                                   LogErrorToFile(ex.Message, outputFile);
-                                   AnsiConsole.WriteException(ex);
+                                   logger.LogError(ex.Message);
                                    if (ex.InnerException != null)
                                    {
-                                       LogErrorToFile(ex.InnerException.Message, outputFile);
-                                       AnsiConsole.WriteException(ex.InnerException);
+                                       logger.LogError(ex.InnerException.Message);
                                    }
                                    context.ExitCode = 1;
                                }
@@ -1255,9 +1116,9 @@ namespace FtpCmdline
                            var mainTask = ctx.AddTask("Starting...");
                            mainTask.StartTask();
                            mainTask.Value = 25;
-                           await OutputToDoProgress(context, ctx, async (context, ctx, outputFile) =>
+                           await OutputToDoProgress(context, ctx, async (context, ctx, logger) =>
                            {
-                               using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                               using var timestampHelper = new TimestampHelper(logger);
                                try
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
@@ -1265,7 +1126,7 @@ namespace FtpCmdline
                                    var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
                                    var parallelTaskValue = parallelTasks != null ? context.ParseResult.GetValueForOption(parallelTasks) : 1;
 
-                                   var client = await GetClientProgress(context, mainTask, outputFile);
+                                   var client = await GetClientProgress(context, mainTask, logger);
                                    mainTask.Description = "Prepare Download...";
                                    mainTask.Value = 50;
 
@@ -1276,17 +1137,15 @@ namespace FtpCmdline
                                        {
                                            if ((int)p.Progress == 100)
                                            {
-                                               LogInfoToFile("Download " + p.LocalPath, outputFile);
+                                               logger.LogInfo("Download " + p.LocalPath);
                                            }
                                        }
                                        catch (Exception ex)
                                        {
-                                           LogErrorToFile(ex.Message, outputFile);
-                                           AnsiConsole.WriteException(ex);
+                                           logger.LogError(ex.Message);
                                            if (ex.InnerException != null)
                                            {
-                                               LogErrorToFile(ex.InnerException.Message, outputFile);
-                                               AnsiConsole.WriteException(ex.InnerException);
+                                               logger.LogError(ex.InnerException.Message);
                                            }
                                        }
                                    });
@@ -1316,13 +1175,13 @@ namespace FtpCmdline
                                                    {
                                                        var newList = items.Skip(i * countPerTask).ToList();
                                                        listOfList.Add(newList.Where(w => w.Type == FtpObjectType.File).Select(s => s.FullName).ToList());
-                                                       LogVerboseToFile("Create new parallel list with " + newList.Count + " items", outputFile);
+                                                       logger.LogVerbose("Create new parallel list with " + newList.Count + " items");
                                                    }
                                                    else
                                                    {
                                                        var newList = items.Skip(i * countPerTask).Take(countPerTask).ToList();
                                                        listOfList.Add(newList.Where(w => w.Type == FtpObjectType.File).Select(s => s.FullName).ToList());
-                                                       LogVerboseToFile("Create new parallel list with " + newList.Count + " items", outputFile);
+                                                       logger.LogVerbose("Create new parallel list with " + newList.Count + " items");
                                                    }
                                                }
                                                var taskList = new List<Task>();
@@ -1347,8 +1206,7 @@ namespace FtpCmdline
                                                    }
                                                    catch (Exception ex)
                                                    {
-                                                       AnsiConsole.WriteException(ex);
-                                                       LogErrorToFile(ex.Message, outputFile);
+                                                       logger.LogError(ex.Message);
                                                    }
                                                };
                                                overallTask.StartTask();
@@ -1372,53 +1230,43 @@ namespace FtpCmdline
                                                                task.Description = TrimPad(taskDescription + "(" + (int)p.Progress + "%)", 60);
                                                            });
                                                            var toCopy = localPathValue + item.Replace("/", "\\");
-                                                           var clientIntern = await GetClientProgress(context, mainTask, outputFile, true);
+                                                           var clientIntern = await GetClientProgress(context, mainTask, logger, true);
                                                            try
                                                            {
                                                                if (!clientIntern.IsConnected)
                                                                {
-                                                                   LogWarnToFile("Reconnect client (" + localIndex + ")", outputFile);
+                                                                   logger.LogWarn("Reconnect client (" + localIndex + ")");
                                                                    mainTask.Description = "Reconnecting";
                                                                    clientIntern.Dispose();
-                                                                   clientIntern = await GetClientProgress(context, mainTask, outputFile);
+                                                                   clientIntern = await GetClientProgress(context, mainTask, logger);
                                                                }
-                                                               LogVerboseToFile("Try to download (" + localIndex + ") " + toCopy, outputFile);
+                                                               logger.LogVerbose("Try to download (" + localIndex + ") " + toCopy);
                                                                await clientIntern.DownloadFile(toCopy, item,
                                                                                         skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                                                                         FtpVerify.None,
                                                                                         progress, context.GetCancellationToken());
-                                                               LogInfoToFile("Downloaded (" + localIndex + ") " + toCopy, outputFile);
-                                                               if (outputFile != null)
-                                                               {
-                                                                   lock (lockObj2)
-                                                                   {
-                                                                       outputFile.WriteLine($"Download({localIndex}) {item} => {toCopy}");
-                                                                   }
-                                                               }
+                                                               logger.LogInfo($"Download({localIndex}) {item} => {toCopy}");
                                                            }
                                                            catch (Exception ex)
                                                            {
-                                                               AnsiConsole.WriteException(ex);
-                                                               AnsiConsole.WriteLine(toCopy);
-                                                               LogErrorToFile(ex.Message + "(" + localIndex + ") " + toCopy, outputFile);
+                                                               logger.LogError(ex.Message + "(" + localIndex + ") " + toCopy);
                                                                if (ex.InnerException != null)
                                                                {
-                                                                   AnsiConsole.WriteException(ex.InnerException);
-                                                                   LogErrorToFile(ex.InnerException.Message + "(" + localIndex + ") ", outputFile);
+                                                                   logger.LogError(ex.InnerException.Message + "(" + localIndex + ") ");
                                                                }
                                                                if (!clientIntern.IsConnected)
                                                                {
-                                                                   LogWarnToFile("Reconnect client (" + localIndex + ")", outputFile);
+                                                                   logger.LogWarn("Reconnect client (" + localIndex + ")");
                                                                    mainTask.Description = "Reconnecting";
                                                                    client.Dispose();
-                                                                   client = await GetClientProgress(context, mainTask, outputFile);
+                                                                   client = await GetClientProgress(context, mainTask, logger);
                                                                }
-                                                               LogVerboseToFile("Try to download (" + localIndex + ") " + toCopy, outputFile);
+                                                               logger.LogVerbose("Try to download (" + localIndex + ") " + toCopy);
                                                                await clientIntern.DownloadFile(toCopy, item,
                                                                                          skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                                                                          FtpVerify.None,
                                                                                          progress, context.GetCancellationToken());
-                                                               LogInfoToFile("Downloaded (" + localIndex + ") " + toCopy, outputFile);
+                                                               logger.LogInfo("Downloaded (" + localIndex + ") " + toCopy);
                                                            }
                                                            await clientIntern.Disconnect();
                                                            clientIntern.Dispose();
@@ -1438,7 +1286,7 @@ namespace FtpCmdline
                                            }
                                            mainTask.Value = 100;
                                            AnsiConsole.WriteLine("Directory downloaded");
-                                           LogInfoToFile("Directory downloaded", outputFile);
+                                           logger.LogInfo("Directory downloaded");
                                            context.ExitCode = 0;
                                            return;
                                        }
@@ -1446,13 +1294,13 @@ namespace FtpCmdline
                                        {
                                            mainTask.Description = "Download...";
                                            mainTask.Value = 75;
-                                           LogVerboseToFile("Try to download " + pathValue, outputFile);
+                                           logger.LogVerbose("Try to download " + pathValue);
                                            await client.DownloadDirectory(localPathValue, pathValue,
                                                FtpFolderSyncMode.Update,
                                                skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                                FtpVerify.None, null, progress,
                                                context.GetCancellationToken());
-                                           LogInfoToFile("Downloaded " + pathValue, outputFile);
+                                           logger.LogInfo("Downloaded " + pathValue);
                                        }
                                        mainTask.Value = 100;
                                        AnsiConsole.WriteLine("Directory downloaded");
@@ -1462,19 +1310,17 @@ namespace FtpCmdline
                                    {
                                        mainTask.Description = "Download...";
                                        mainTask.Value = 75;
-                                       LogVerboseToFile("Try to download " + pathValue, outputFile);
+                                       logger.LogVerbose("Try to download " + pathValue);
                                        await client.DownloadFile(localPathValue, pathValue,
                                            skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                            FtpVerify.None,
                                            progress, context.GetCancellationToken());
-                                       LogInfoToFile("Downloaded " + pathValue, outputFile);
-                                       AnsiConsole.WriteLine("File downloaded");
+                                       logger.LogInfo("Downloaded " + pathValue);
                                        mainTask.Value = 100;
                                    }
                                    else
                                    {
-                                       LogWarnToFile("File or Directory not exists", outputFile);
-                                       AnsiConsole.WriteLine("File or Directory not exists");
+                                       logger.LogWarn("File or Directory not exists");
                                        context.ExitCode = 2;
                                    }
                                    mainTask.Value = 100;
@@ -1484,10 +1330,10 @@ namespace FtpCmdline
                                }
                                catch (Exception ex)
                                {
-                                   AnsiConsole.WriteLine(ex.Message);
+                                   logger.LogError(ex.Message);
                                    if (ex.InnerException != null)
                                    {
-                                       AnsiConsole.WriteLine(ex.InnerException.Message);
+                                       logger.LogError(ex.InnerException.Message);
                                    }
                                    context.ExitCode = 1;
                                }
@@ -1506,18 +1352,18 @@ namespace FtpCmdline
                       .Spinner(Spinner.Known.Dots12)
                       .StartAsync("Clear...", async ctx =>
                       {
-                          await OutputToDo(context, ctx, async (context, ctx, outputFile) =>
+                          await OutputToDo(context, ctx, async (context, ctx, logger) =>
                           {
-                              using var timestampHelper = new TimestampHelper(outputFile, logLevel);
+                              using var timestampHelper = new TimestampHelper(logger);
                               try
                               {
                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                                   var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
                                   var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
 
-                                  var client = await GetClient(context, ctx, outputFile);
+                                  var client = await GetClient(context, ctx, logger);
                                   ctx.Status = "Prepare clear...";
-                                  LogVerboseToFile("Count files and folders", outputFile);
+                                  logger.LogVerbose("Count files and folders");
                                   var items = await GetItems(client, pathValue ?? string.Empty, new List<FtpListItem>(), recursiveValue, excludeValue, context.GetCancellationToken());
                                   // delete all files
                                   var index = 1;
@@ -1525,23 +1371,22 @@ namespace FtpCmdline
                                   var deleted = 0;
                                   if (files != null)
                                   {
-                                      AnsiConsole.WriteLine(files.Count + " files to delete");
-                                      LogVerboseToFile(files.Count + " files to delete", outputFile);
+                                      logger.LogVerbose(files.Count + " files to delete");
                                       foreach (var item in files)
                                       {
                                           try
                                           {
                                               if (!client.IsConnected)
                                               {
-                                                  LogWarnToFile("Reconnecting", outputFile);
+                                                  logger.LogWarn("Reconnecting");
                                                   ctx.Status("Reconnecting");
                                                   client.Dispose();
-                                                  client = await GetClient(context, ctx, outputFile);
+                                                  client = await GetClient(context, ctx, logger);
                                               }
-                                              LogVerboseToFile("Try to delete " + item.FullName, outputFile);
+                                              logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteFile(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete file " + item.FullName + " (" + index + " of " + files.Count + ")");
-                                              LogVerboseToFile("Delete " + item.FullName + " (" + index + " of " + files.Count + ")", outputFile);
+                                              logger.LogVerbose("Delete " + item.FullName + " (" + index + " of " + files.Count + ")");
                                               index++;
                                               deleted++;
                                           }
@@ -1550,14 +1395,14 @@ namespace FtpCmdline
                                               if (!client.IsConnected)
                                               {
                                                   ctx.Status("Reconnecting");
-                                                  LogWarnToFile("Reconnecting", outputFile);
+                                                  logger.LogWarn("Reconnecting");
                                                   client.Dispose();
-                                                  client = await GetClient(context, ctx, outputFile);
+                                                  client = await GetClient(context, ctx, logger);
                                               }
-                                              LogVerboseToFile("Try to delete " + item.FullName, outputFile);
+                                              logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteFile(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete file " + item.FullName + " (" + index + " of " + files.Count + ")");
-                                              LogVerboseToFile("Delete " + item.FullName + " (" + index + " of " + files.Count + ")", outputFile);
+                                              logger.LogVerbose("Delete " + item.FullName + " (" + index + " of " + files.Count + ")");
                                               index++;
                                               deleted++;
                                           }
@@ -1567,8 +1412,7 @@ namespace FtpCmdline
                                   var directories = items.Where(w => w.Type == FtpObjectType.Directory).OrderByDescending(o => o.FullName.Length).ToList();
                                   if (directories != null)
                                   {
-                                      AnsiConsole.WriteLine(directories.Count + " directories to delete");
-                                      LogVerboseToFile(directories.Count + " directories to delete", outputFile);
+                                      logger.LogVerbose(directories.Count + " directories to delete");
                                       foreach (var item in directories)
                                       {
                                           try
@@ -1576,20 +1420,20 @@ namespace FtpCmdline
                                               if (!client.IsConnected)
                                               {
                                                   ctx.Status("Reconnecting");
-                                                  LogWarnToFile("Reconnecting", outputFile);
+                                                  logger.LogWarn("Reconnecting");
                                                   client.Dispose();
-                                                  client = await GetClient(context, ctx, outputFile);
+                                                  client = await GetClient(context, ctx, logger);
                                               }
                                               var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
                                               if (filesInPath != null && filesInPath.Count() > 0)
                                               {
-                                                  LogVerboseToFile(item.FullName + " contains files", outputFile);
+                                                  logger.LogVerbose(item.FullName + " contains files");
                                                   continue;
                                               }
-                                              LogVerboseToFile("Try to delete " + item.FullName, outputFile);
+                                              logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete directory " + item.FullName + " (" + index + " of " + directories.Count + ")");
-                                              LogInfoToFile("Delete directory " + item.FullName + " (" + index + " of " + directories.Count + ")", outputFile);
+                                              logger.LogInfo("Delete directory " + item.FullName + " (" + index + " of " + directories.Count + ")");
                                               index++;
                                               deleted++;
 
@@ -1598,39 +1442,37 @@ namespace FtpCmdline
                                           {
                                               if (!client.IsConnected)
                                               {
-                                                  LogWarnToFile("Reconnecting", outputFile);
+                                                  logger.LogWarn("Reconnecting");
                                                   ctx.Status("Reconnecting");
                                                   client.Dispose();
-                                                  client = await GetClient(context, ctx, outputFile);
+                                                  client = await GetClient(context, ctx, logger);
                                               }
                                               var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
                                               if (filesInPath != null && filesInPath.Count() > 0)
                                               {
-                                                  LogVerboseToFile(item.FullName + " contains files", outputFile);
+                                                  logger.LogVerbose(item.FullName + " contains files");
                                                   continue;
                                               }
-                                              LogVerboseToFile("Try to delete " + item.FullName, outputFile);
+                                              logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete directory " + item.FullName + " (" + index + " of " + directories.Count + ")");
-                                              LogInfoToFile("Delete directory " + item.FullName + " (" + index + " of " + directories.Count + ")", outputFile);
+                                              logger.LogInfo("Delete directory " + item.FullName + " (" + index + " of " + directories.Count + ")");
                                               index++;
                                               deleted++;
                                           }
                                       }
                                   }
                                   AnsiConsole.WriteLine("Delete " + deleted + " of " + items.Count() + " items");
-                                  LogInfoToFile("Delete " + deleted + " of " + items.Count() + " items", outputFile);
+                                  logger.LogInfo("Delete " + deleted + " of " + items.Count() + " items");
                                   await client.Disconnect();
                                   client.Dispose();
                               }
                               catch (Exception ex)
                               {
-                                  AnsiConsole.WriteLine(ex.Message);
-                                  LogErrorToFile(ex.Message, outputFile);
+                                  logger.LogError(ex.Message);
                                   if (ex.InnerException != null)
                                   {
-                                      AnsiConsole.WriteLine(ex.InnerException.Message);
-                                      LogErrorToFile(ex.InnerException.Message, outputFile);
+                                      logger.LogError(ex.InnerException.Message);
                                   }
                                   context.ExitCode = 1;
                               }

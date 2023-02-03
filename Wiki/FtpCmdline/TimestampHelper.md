@@ -15,15 +15,11 @@ Implements [System.IDisposable](https://docs.microsoft.com/en-us/dotnet/api/Syst
 
 | Constructors | |
 | :--- | :--- |
-| [TimestampHelper(StreamWriter, LogLevel)](TimestampHelper.TimestampHelper(StreamWriter,LogLevel).md 'FtpCmdline.TimestampHelper.TimestampHelper(System.IO.StreamWriter, FtpCmdline.LogLevel)') | constructor |
-
-| Fields | |
-| :--- | :--- |
-| [logLevel](TimestampHelper.logLevel.md 'FtpCmdline.TimestampHelper.logLevel') | Log Level |
+| [TimestampHelper(Logger)](TimestampHelper.TimestampHelper(Logger).md 'FtpCmdline.TimestampHelper.TimestampHelper(FtpCmdline.Logger)') | constructor |
 
 | Properties | |
 | :--- | :--- |
-| [output](TimestampHelper.output.md 'FtpCmdline.TimestampHelper.output') | output file |
+| [logger](TimestampHelper.logger.md 'FtpCmdline.TimestampHelper.logger') | logger |
 
 | Methods | |
 | :--- | :--- |

@@ -13,29 +13,22 @@ namespace FtpCmdline
     public class TimestampHelper : IDisposable
     {
         /// <summary>
-        /// output file
+        /// logger
         /// </summary>
-        public StreamWriter? output { get; set; }
-
-        /// <summary>
-        /// Log Level
-        /// </summary>
-        public LogLevel logLevel = LogLevel.Error;
+        public Logger logger { get; set; }
 
         private DateTimeOffset _timestamp;
         /// <summary>
         /// constructor
         /// </summary>
-        /// <param name="_output"></param>
-        /// <param name="_level"></param>
+        /// <param name="_logger"></param>
         /// <remarks>
         /// starts the timer
         /// </remarks>
-        public TimestampHelper(StreamWriter? _output, LogLevel _level) 
+        public TimestampHelper(Logger _logger) 
         {
             _timestamp = DateTimeOffset.Now;
-            output = _output;
-            logLevel = _level;
+            logger = _logger;
         }
 
         /// <summary>
@@ -44,11 +37,7 @@ namespace FtpCmdline
         public void Dispose()
         {
             var ts = $"Duration {DateTimeOffset.Now - _timestamp}";
-            if (output != null && logLevel >= LogLevel.Info)
-            {
-                output.WriteLine(ts);
-            }
-            AnsiConsole.WriteLine(ts);
+            logger.LogInfo(ts);
         }
     }
 }

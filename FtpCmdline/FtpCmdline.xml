@@ -22,6 +22,62 @@
             </summary>
             <param name="entry"></param>
         </member>
+        <member name="T:FtpCmdline.Logger">
+            <summary>
+            general logger
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.Logger.#ctor(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option{System.String},System.CommandLine.Option{FtpCmdline.LogLevel},System.CommandLine.Option{System.Boolean})">
+            <summary>
+            constructor
+            </summary>
+            <param name="context"></param>
+            <param name="output"></param>
+            <param name="level"></param>
+            <param name="log"></param>
+        </member>
+        <member name="P:FtpCmdline.Logger.LogToConsole">
+            <summary>
+            log to console
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.Logger.LogError(System.String,System.Boolean)">
+            <summary>
+            Log Error
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:FtpCmdline.Logger.LogWarn(System.String,System.Boolean)">
+            <summary>
+            Log Warning
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:FtpCmdline.Logger.LogInfo(System.String,System.Boolean)">
+            <summary>
+            Log Info
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:FtpCmdline.Logger.LogVerbose(System.String,System.Boolean)">
+            <summary>
+            Log Verbose
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:FtpCmdline.Logger.Dispose">
+            <summary>
+            interface implementation
+            </summary>
+            <inheritdoc/>
+        </member>
+        <member name="M:FtpCmdline.Logger.Log(FluentFTP.FtpLogEntry)">
+            <summary>
+            interface implementation
+            </summary>
+            <param name="entry"></param>
+            <inheritdoc/>
+        </member>
         <member name="T:FtpCmdline.LogLevel">
             <summary>
             Log Level for FluentFTP Logging in output file
@@ -133,23 +189,23 @@
             count of parallel upload/download streams
             </summary>
         </member>
-        <member name="M:FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext,System.IO.StreamWriter,System.Boolean)">
+        <member name="M:FtpCmdline.Program.GetClient(System.CommandLine.Invocation.InvocationContext,Spectre.Console.StatusContext,FtpCmdline.Logger,System.Boolean)">
             <summary>
             create and connect ftp client
             </summary>
             <param name="context">command line context</param>
-            <param name="context2">ansi console status context</param>
-            <param name="outputFile">output file</param>
+            <param name="context2">Ansi console status context</param>
+            <param name="logger">output file</param>
             <param name="supressStatus">supress status messages</param>
             <returns></returns>
         </member>
-        <member name="M:FtpCmdline.Program.GetClientProgress(System.CommandLine.Invocation.InvocationContext,Spectre.Console.ProgressTask,System.IO.StreamWriter,System.Boolean)">
+        <member name="M:FtpCmdline.Program.GetClientProgress(System.CommandLine.Invocation.InvocationContext,Spectre.Console.ProgressTask,FtpCmdline.Logger,System.Boolean)">
             <summary>
             create and connect ftp client with progress context
             </summary>
             <param name="context">command line context</param>
             <param name="task">progress task</param>
-            <param name="outputFile">output file</param>
+            <param name="logger">output file</param>
             <param name="supressStatus">supress status messages</param>
             <returns></returns>
         </member>
@@ -231,22 +287,16 @@
             Timestamp Helper
             </summary>
         </member>
-        <member name="P:FtpCmdline.TimestampHelper.output">
+        <member name="P:FtpCmdline.TimestampHelper.logger">
             <summary>
-            output file
+            logger
             </summary>
         </member>
-        <member name="F:FtpCmdline.TimestampHelper.logLevel">
-            <summary>
-            Log Level
-            </summary>
-        </member>
-        <member name="M:FtpCmdline.TimestampHelper.#ctor(System.IO.StreamWriter,FtpCmdline.LogLevel)">
+        <member name="M:FtpCmdline.TimestampHelper.#ctor(FtpCmdline.Logger)">
             <summary>
             constructor
             </summary>
-            <param name="_output"></param>
-            <param name="_level"></param>
+            <param name="_logger"></param>
             <remarks>
             starts the timer
             </remarks>
