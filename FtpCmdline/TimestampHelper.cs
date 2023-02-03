@@ -17,18 +17,25 @@ namespace FtpCmdline
         /// </summary>
         public StreamWriter? output { get; set; }
 
+        /// <summary>
+        /// Log Level
+        /// </summary>
+        public LogLevel logLevel = LogLevel.Error;
+
         private DateTimeOffset _timestamp;
         /// <summary>
         /// constructor
         /// </summary>
         /// <param name="_output"></param>
+        /// <param name="_level"></param>
         /// <remarks>
         /// starts the timer
         /// </remarks>
-        public TimestampHelper(StreamWriter? _output) 
+        public TimestampHelper(StreamWriter? _output, LogLevel _level) 
         {
             _timestamp = DateTimeOffset.Now;
             output = _output;
+            logLevel = _level;
         }
 
         /// <summary>
@@ -37,7 +44,7 @@ namespace FtpCmdline
         public void Dispose()
         {
             var ts = $"Duration {DateTimeOffset.Now - _timestamp}";
-            if (output != null)
+            if (output != null && logLevel >= LogLevel.Info)
             {
                 output.WriteLine(ts);
             }

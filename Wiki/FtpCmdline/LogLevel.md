@@ -5,7 +5,7 @@
 Log Level for FluentFTP Logging in output file
 
 ```csharp
-internal enum LogLevel
+public enum LogLevel
 ```
 ### Fields
 

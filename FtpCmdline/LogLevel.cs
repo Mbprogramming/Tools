@@ -3,7 +3,7 @@
     /// <summary>
     /// Log Level for FluentFTP Logging in output file
     /// </summary>
-    internal enum LogLevel
+    public enum LogLevel
     {
         /// <summary>
         /// No logging

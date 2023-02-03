@@ -236,11 +236,17 @@
             output file
             </summary>
         </member>
-        <member name="M:FtpCmdline.TimestampHelper.#ctor(System.IO.StreamWriter)">
+        <member name="F:FtpCmdline.TimestampHelper.logLevel">
+            <summary>
+            Log Level
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.TimestampHelper.#ctor(System.IO.StreamWriter,FtpCmdline.LogLevel)">
             <summary>
             constructor
             </summary>
             <param name="_output"></param>
+            <param name="_level"></param>
             <remarks>
             starts the timer
             </remarks>
