@@ -15,6 +15,8 @@ namespace FtpCmdline
         private readonly bool? _verboseConsole;
         private readonly StreamWriter? _outputFile = null;
         private readonly object _outputLock = new();
+        private LogLevel _screenLevel = LogLevel.Info;
+        private LogLevel _oldScreenLevel = LogLevel.Info;
 
         /// <summary>
         /// constructor
@@ -40,6 +42,10 @@ namespace FtpCmdline
                     _outputFile = File.CreateText(_outputPath);
                 }
             }
+            if(_verboseConsole.HasValue && _verboseConsole.Value)
+            {
+                _screenLevel = LogLevel.Verbose;
+            }
         }
 
         /// <summary>
@@ -54,7 +60,7 @@ namespace FtpCmdline
         /// Log Error
         /// </summary>
         /// <param name="message"></param>
-        public void LogError(string message, bool ftp = false)
+        public void LogError(string message)
         {
             if (_outputFile != null && _level >= LogLevel.Error)
             {
@@ -63,15 +69,17 @@ namespace FtpCmdline
                     _outputFile.WriteLine(message);
                 }
             }
-            if(_level >= LogLevel.Error && !ftp || (ftp && LogToConsole))
+            if (_screenLevel >= LogLevel.Error)
+            {
                 AnsiConsole.WriteLine(message);
+            }
         }
 
         /// <summary>
         /// Log Warning
         /// </summary>
         /// <param name="message"></param>
-        public void LogWarn(string message, bool ftp = false)
+        public void LogWarn(string message)
         {
             if (_outputFile != null && _level >= LogLevel.Warn)
             {
@@ -80,15 +88,17 @@ namespace FtpCmdline
                     _outputFile.WriteLine(message);
                 }
             }
-            if (_level >= LogLevel.Warn && (!ftp || (ftp && LogToConsole)))
+            if (_screenLevel >= LogLevel.Warn)
+            {
                 AnsiConsole.WriteLine(message);
+            }
         }
 
         /// <summary>
         /// Log Info
         /// </summary>
         /// <param name="message"></param>
-        public void LogInfo(string message, bool ftp = false)
+        public void LogInfo(string message)
         {
             if (_outputFile != null && _level >= LogLevel.Info)
             {
@@ -97,15 +107,17 @@ namespace FtpCmdline
                     _outputFile.WriteLine(message);
                 }
             }
-            if (_level >= LogLevel.Info && (!ftp || (ftp && LogToConsole)))
+            if (_screenLevel >= LogLevel.Info)
+            {
                 AnsiConsole.WriteLine(message);
+            }
         }
 
         /// <summary>
         /// Log Verbose
         /// </summary>
         /// <param name="message"></param>
-        public void LogVerbose(string message, bool ftp = false)
+        public void LogVerbose(string message)
         {
             if (_outputFile != null && _level >= LogLevel.Verbose)
             {
@@ -114,8 +126,10 @@ namespace FtpCmdline
                     _outputFile.WriteLine(message);
                 }
             }
-            if (_level >= LogLevel.Verbose && (!ftp || (ftp && LogToConsole)))
+            if (_screenLevel >= LogLevel.Verbose)
+            {
                 AnsiConsole.WriteLine(message);
+            }
         }
 
         /// <summary>
@@ -138,22 +152,39 @@ namespace FtpCmdline
             switch (entry.Severity)
             {
                 case FtpTraceLevel.Verbose:
-                    LogVerbose(entry.Message, true);
+                    LogVerbose(entry.Message);
                     break;
                 case FtpTraceLevel.Info:
-                    LogInfo(entry.Message, true);
+                    LogInfo(entry.Message);
                     break;
                 case FtpTraceLevel.Warn:
-                    LogWarn(entry.Message, true);
+                    LogWarn(entry.Message);
                     break;
                 case FtpTraceLevel.Error:
-                    LogError(entry.Message, true);
+                    LogError(entry.Message);
                     if (entry.Exception != null)
                     {
                         LogError(entry.Exception.Message);
                     }
                     break;
             }
+        }
+
+        /// <summary>
+        /// set in progress
+        /// </summary>
+        public void DoInProgress()
+        {
+            _oldScreenLevel = _screenLevel;
+            _screenLevel = LogLevel.Error;
+        }
+
+        /// <summary>
+        /// set no in progress
+        /// </summary>
+        public void StopInProgress()
+        {
+            _screenLevel = _oldScreenLevel;
         }
     }
 }

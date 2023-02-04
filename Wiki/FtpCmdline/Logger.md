@@ -25,7 +25,9 @@ Implements [FluentFTP.IFtpLogger](https://docs.microsoft.com/en-us/dotnet/api/Fl
 | Methods | |
 | :--- | :--- |
 | [Dispose()](Logger.Dispose().md 'FtpCmdline.Logger.Dispose()') | Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources. |
-| [LogError(string, bool)](Logger.LogError(string,bool).md 'FtpCmdline.Logger.LogError(string, bool)') | Log Error |
-| [LogInfo(string, bool)](Logger.LogInfo(string,bool).md 'FtpCmdline.Logger.LogInfo(string, bool)') | Log Info |
-| [LogVerbose(string, bool)](Logger.LogVerbose(string,bool).md 'FtpCmdline.Logger.LogVerbose(string, bool)') | Log Verbose |
-| [LogWarn(string, bool)](Logger.LogWarn(string,bool).md 'FtpCmdline.Logger.LogWarn(string, bool)') | Log Warning |
+| [DoInProgress()](Logger.DoInProgress().md 'FtpCmdline.Logger.DoInProgress()') | set in progress |
+| [LogError(string)](Logger.LogError(string).md 'FtpCmdline.Logger.LogError(string)') | Log Error |
+| [LogInfo(string)](Logger.LogInfo(string).md 'FtpCmdline.Logger.LogInfo(string)') | Log Info |
+| [LogVerbose(string)](Logger.LogVerbose(string).md 'FtpCmdline.Logger.LogVerbose(string)') | Log Verbose |
+| [LogWarn(string)](Logger.LogWarn(string).md 'FtpCmdline.Logger.LogWarn(string)') | Log Warning |
+| [StopInProgress()](Logger.StopInProgress().md 'FtpCmdline.Logger.StopInProgress()') | set no in progress |

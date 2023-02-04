@@ -41,25 +41,25 @@
             log to console
             </summary>
         </member>
-        <member name="M:FtpCmdline.Logger.LogError(System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Logger.LogError(System.String)">
             <summary>
             Log Error
             </summary>
             <param name="message"></param>
         </member>
-        <member name="M:FtpCmdline.Logger.LogWarn(System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Logger.LogWarn(System.String)">
             <summary>
             Log Warning
             </summary>
             <param name="message"></param>
         </member>
-        <member name="M:FtpCmdline.Logger.LogInfo(System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Logger.LogInfo(System.String)">
             <summary>
             Log Info
             </summary>
             <param name="message"></param>
         </member>
-        <member name="M:FtpCmdline.Logger.LogVerbose(System.String,System.Boolean)">
+        <member name="M:FtpCmdline.Logger.LogVerbose(System.String)">
             <summary>
             Log Verbose
             </summary>
@@ -77,6 +77,16 @@
             </summary>
             <param name="entry"></param>
             <inheritdoc/>
+        </member>
+        <member name="M:FtpCmdline.Logger.DoInProgress">
+            <summary>
+            set in progress
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.Logger.StopInProgress">
+            <summary>
+            set no in progress
+            </summary>
         </member>
         <member name="T:FtpCmdline.LogLevel">
             <summary>

@@ -511,6 +511,7 @@ namespace FtpCmdline
                            var allFiles = 1;
                            await OutputToDoProgress(context, ctx, async (context, ctx, logger) =>
                            {
+                               logger.DoInProgress();
                                using var timestampHelper = new TimestampHelper(logger);
                                try
                                {
@@ -798,7 +799,7 @@ namespace FtpCmdline
                                                fileUpload++;
                                            }
                                        }
-
+                                       logger.StopInProgress();
                                        logger.LogInfo("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)");
                                        context.ExitCode = 0;
                                    }
@@ -810,12 +811,14 @@ namespace FtpCmdline
                                            FtpRemoteExists.Overwrite,
                                            true, FtpVerify.None,
                                            progress, context.GetCancellationToken());
+                                       logger.StopInProgress();
                                        logger.LogInfo("File uploaded from " + localPathValue + " to " + pathValue);
                                        await client.Disconnect();
                                        client.Dispose();
                                    }
                                    else
                                    {
+                                       logger.StopInProgress();
                                        logger.LogWarn("File not exists " + localPathValue);
                                        context.ExitCode = 2;
                                    }
@@ -1118,6 +1121,7 @@ namespace FtpCmdline
                            mainTask.Value = 25;
                            await OutputToDoProgress(context, ctx, async (context, ctx, logger) =>
                            {
+                               logger.DoInProgress();
                                using var timestampHelper = new TimestampHelper(logger);
                                try
                                {
@@ -1303,6 +1307,7 @@ namespace FtpCmdline
                                            logger.LogInfo("Downloaded " + pathValue);
                                        }
                                        mainTask.Value = 100;
+                                       logger.StopInProgress();
                                        AnsiConsole.WriteLine("Directory downloaded");
                                        context.ExitCode = 0;
                                    }
@@ -1315,11 +1320,13 @@ namespace FtpCmdline
                                            skipValue ? FtpLocalExists.Skip : FtpLocalExists.Overwrite,
                                            FtpVerify.None,
                                            progress, context.GetCancellationToken());
+                                       logger.StopInProgress();
                                        logger.LogInfo("Downloaded " + pathValue);
                                        mainTask.Value = 100;
                                    }
                                    else
                                    {
+                                       logger.StopInProgress();
                                        logger.LogWarn("File or Directory not exists");
                                        context.ExitCode = 2;
                                    }
