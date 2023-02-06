@@ -27,14 +27,15 @@
             general logger
             </summary>
         </member>
-        <member name="M:FtpCmdline.Logger.#ctor(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option{System.String},System.CommandLine.Option{FtpCmdline.LogLevel},System.CommandLine.Option{System.Boolean})">
+        <member name="M:FtpCmdline.Logger.#ctor(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option{System.String},System.CommandLine.Option{FtpCmdline.LogLevel},System.CommandLine.Option{FtpCmdline.LogLevel},System.CommandLine.Option{FtpCmdline.LogLevel})">
             <summary>
             constructor
             </summary>
             <param name="context"></param>
             <param name="output"></param>
             <param name="level"></param>
-            <param name="log"></param>
+            <param name="screenLevel"></param>
+            <param name="ftpClientLevel"></param>
         </member>
         <member name="P:FtpCmdline.Logger.LogToConsole">
             <summary>
@@ -159,11 +160,6 @@
             local path option
             </summary>
         </member>
-        <member name="F:FtpCmdline.Program.log">
-            <summary>
-            extended logging option
-            </summary>
-        </member>
         <member name="F:FtpCmdline.Program.recursive">
             <summary>
             Go down the directory tree recursivly
@@ -192,6 +188,16 @@
         <member name="F:FtpCmdline.Program.outputLevel">
             <summary>
             output file log level
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.Program.screenLevel">
+            <summary>
+            screen log level
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.Program.ftpClientLevel">
+            <summary>
+            ftp client log level
             </summary>
         </member>
         <member name="F:FtpCmdline.Program.parallelTasks">

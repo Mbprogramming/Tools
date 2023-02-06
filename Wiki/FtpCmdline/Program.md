@@ -17,9 +17,9 @@ See the following package documentations <br/>[Spectre.Console](https://spectrec
 | Fields | |
 | :--- | :--- |
 | [exclude](Program.exclude.md 'FtpCmdline.Program.exclude') | exclude items in this list |
+| [ftpClientLevel](Program.ftpClientLevel.md 'FtpCmdline.Program.ftpClientLevel') | ftp client log level |
 | [host](Program.host.md 'FtpCmdline.Program.host') | ftp host option |
 | [localPath](Program.localPath.md 'FtpCmdline.Program.localPath') | local path option |
-| [log](Program.log.md 'FtpCmdline.Program.log') | extended logging option |
 | [newPath](Program.newPath.md 'FtpCmdline.Program.newPath') | ftp new path option |
 | [output](Program.output.md 'FtpCmdline.Program.output') | result output file |
 | [outputLevel](Program.outputLevel.md 'FtpCmdline.Program.outputLevel') | output file log level |
@@ -27,6 +27,7 @@ See the following package documentations <br/>[Spectre.Console](https://spectrec
 | [path](Program.path.md 'FtpCmdline.Program.path') | ftp path option |
 | [pwd](Program.pwd.md 'FtpCmdline.Program.pwd') | ftp password  option |
 | [recursive](Program.recursive.md 'FtpCmdline.Program.recursive') | Go down the directory tree recursivly |
+| [screenLevel](Program.screenLevel.md 'FtpCmdline.Program.screenLevel') | screen log level |
 | [skip](Program.skip.md 'FtpCmdline.Program.skip') | skip or overwrite existing files |
 | [tree](Program.tree.md 'FtpCmdline.Program.tree') | list only directory tree |
 | [user](Program.user.md 'FtpCmdline.Program.user') | ftp user option |

@@ -11,12 +11,18 @@ namespace FtpCmdline
     public class Logger : IFtpLogger, IDisposable
     {
         private readonly string? _outputPath;
-        private readonly LogLevel _level;
+        
+        private LogLevel _level = LogLevel.Info;
+        private LogLevel _screenLevel = LogLevel.Info;
+        private LogLevel _ftpClientLevel = LogLevel.Warn;
+        
         private readonly bool? _verboseConsole;
         private readonly StreamWriter? _outputFile = null;
         private readonly object _outputLock = new();
-        private LogLevel _screenLevel = LogLevel.Info;
+
+        private LogLevel _oldLevel = LogLevel.Info;
         private LogLevel _oldScreenLevel = LogLevel.Info;
+        private LogLevel _oldFtpClientLevel = LogLevel.Warn;
 
         /// <summary>
         /// constructor
@@ -24,12 +30,14 @@ namespace FtpCmdline
         /// <param name="context"></param>
         /// <param name="output"></param>
         /// <param name="level"></param>
-        /// <param name="log"></param>
-        public Logger(InvocationContext context, Option<string>? output, Option<LogLevel>? level, Option<bool>? log)
+        /// <param name="screenLevel"></param>
+        /// <param name="ftpClientLevel"></param>
+        public Logger(InvocationContext context, Option<string>? output, Option<LogLevel>? level, Option<LogLevel>? screenLevel, Option<LogLevel>? ftpClientLevel)
         {
             _outputPath = output != null ? context.ParseResult.GetValueForOption(output) : string.Empty;
-            _level = level != null ? context.ParseResult.GetValueForOption(level) : LogLevel.Warn;
-            _verboseConsole = log != null && context.ParseResult.GetValueForOption(log);
+            _level = level != null ? context.ParseResult.GetValueForOption(level) : LogLevel.Info;
+            _screenLevel = screenLevel != null ? context.ParseResult.GetValueForOption(screenLevel) : LogLevel.Info;
+            _ftpClientLevel = ftpClientLevel != null ? context.ParseResult.GetValueForOption(ftpClientLevel) : LogLevel.Warn;
 
             if (!string.IsNullOrEmpty(_outputPath))
             {
@@ -42,10 +50,6 @@ namespace FtpCmdline
                     _outputFile = File.CreateText(_outputPath);
                 }
             }
-            if(_verboseConsole.HasValue && _verboseConsole.Value)
-            {
-                _screenLevel = LogLevel.Verbose;
-            }
         }
 
         /// <summary>
@@ -53,7 +57,7 @@ namespace FtpCmdline
         /// </summary>
         public bool LogToConsole
         {
-            get => _verboseConsole.HasValue && _verboseConsole.Value;
+            get => _screenLevel == LogLevel.Verbose;
         }
 
         /// <summary>
@@ -70,6 +74,21 @@ namespace FtpCmdline
                 }
             }
             if (_screenLevel >= LogLevel.Error)
+            {
+                AnsiConsole.WriteLine(message);
+            }
+        }
+
+        private void LogErrorFtp(string message)
+        {
+            if (_outputFile != null && _ftpClientLevel >= LogLevel.Error)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(message);
+                }
+            }
+            if (_ftpClientLevel >= LogLevel.Error)
             {
                 AnsiConsole.WriteLine(message);
             }
@@ -94,6 +113,21 @@ namespace FtpCmdline
             }
         }
 
+        private void LogWarnFtp(string message)
+        {
+            if (_outputFile != null && _ftpClientLevel >= LogLevel.Warn)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(message);
+                }
+            }
+            if (_ftpClientLevel >= LogLevel.Warn)
+            {
+                AnsiConsole.WriteLine(message);
+            }
+        }
+
         /// <summary>
         /// Log Info
         /// </summary>
@@ -113,6 +147,21 @@ namespace FtpCmdline
             }
         }
 
+        private void LogInfoFtp(string message)
+        {
+            if (_outputFile != null && _ftpClientLevel >= LogLevel.Info)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(message);
+                }
+            }
+            if (_ftpClientLevel >= LogLevel.Info)
+            {
+                AnsiConsole.WriteLine(message);
+            }
+        }
+
         /// <summary>
         /// Log Verbose
         /// </summary>
@@ -127,6 +176,21 @@ namespace FtpCmdline
                 }
             }
             if (_screenLevel >= LogLevel.Verbose)
+            {
+                AnsiConsole.WriteLine(message);
+            }
+        }
+
+        private void LogVerboseFtp(string message)
+        {
+            if (_outputFile != null && _ftpClientLevel >= LogLevel.Verbose)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(message);
+                }
+            }
+            if (_ftpClientLevel >= LogLevel.Verbose)
             {
                 AnsiConsole.WriteLine(message);
             }
@@ -152,19 +216,19 @@ namespace FtpCmdline
             switch (entry.Severity)
             {
                 case FtpTraceLevel.Verbose:
-                    LogVerbose(entry.Message);
+                    LogVerboseFtp(entry.Message);
                     break;
                 case FtpTraceLevel.Info:
-                    LogInfo(entry.Message);
+                    LogInfoFtp(entry.Message);
                     break;
                 case FtpTraceLevel.Warn:
-                    LogWarn(entry.Message);
+                    LogWarnFtp(entry.Message);
                     break;
                 case FtpTraceLevel.Error:
-                    LogError(entry.Message);
+                    LogErrorFtp(entry.Message);
                     if (entry.Exception != null)
                     {
-                        LogError(entry.Exception.Message);
+                        LogErrorFtp(entry.Exception.Message);
                     }
                     break;
             }
@@ -177,6 +241,9 @@ namespace FtpCmdline
         {
             _oldScreenLevel = _screenLevel;
             _screenLevel = LogLevel.Error;
+
+            _oldFtpClientLevel= _ftpClientLevel;
+            _ftpClientLevel = LogLevel.Error;
         }
 
         /// <summary>
@@ -185,6 +252,7 @@ namespace FtpCmdline
         public void StopInProgress()
         {
             _screenLevel = _oldScreenLevel;
+            _ftpClientLevel = _oldFtpClientLevel;
         }
     }
 }

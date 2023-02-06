@@ -16,7 +16,7 @@ Implements [FluentFTP.IFtpLogger](https://docs.microsoft.com/en-us/dotnet/api/Fl
 
 | Constructors | |
 | :--- | :--- |
-| [Logger(InvocationContext, Option&lt;string&gt;, Option&lt;LogLevel&gt;, Option&lt;bool&gt;)](Logger.Logger(InvocationContext,Option_string_,Option_LogLevel_,Option_bool_).md 'FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext, System.CommandLine.Option<string>, System.CommandLine.Option<FtpCmdline.LogLevel>, System.CommandLine.Option<bool>)') | constructor |
+| [Logger(InvocationContext, Option&lt;string&gt;, Option&lt;LogLevel&gt;, Option&lt;LogLevel&gt;, Option&lt;LogLevel&gt;)](Logger.Logger(InvocationContext,Option_string_,Option_LogLevel_,Option_LogLevel_,Option_LogLevel_).md 'FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext, System.CommandLine.Option<string>, System.CommandLine.Option<FtpCmdline.LogLevel>, System.CommandLine.Option<FtpCmdline.LogLevel>, System.CommandLine.Option<FtpCmdline.LogLevel>)') | constructor |
 
 | Properties | |
 | :--- | :--- |

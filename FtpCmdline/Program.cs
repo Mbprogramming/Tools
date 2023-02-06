@@ -43,10 +43,6 @@ namespace FtpCmdline
         /// </summary>
         internal static Option<string>? localPath;
         /// <summary>
-        /// extended logging option
-        /// </summary>
-        internal static Option<bool>? log;
-        /// <summary>
         /// Go down the directory tree recursivly
         /// </summary>
         internal static Option<bool>? recursive;
@@ -70,6 +66,14 @@ namespace FtpCmdline
         /// output file log level
         /// </summary>
         internal static Option<LogLevel>? outputLevel;
+        /// <summary>
+        /// screen log level
+        /// </summary>
+        internal static Option<LogLevel>? screenLevel;
+        /// <summary>
+        /// ftp client log level
+        /// </summary>
+        internal static Option<LogLevel>? ftpClientLevel;
         /// <summary>
         /// count of parallel upload/download streams
         /// </summary>
@@ -123,13 +127,13 @@ namespace FtpCmdline
 
         private static async Task OutputToDo(InvocationContext context, StatusContext ctx, Func<InvocationContext, StatusContext, Logger, Task> todo)
         {
-            using var logger = new Logger(context, output, outputLevel, log);
+            using var logger = new Logger(context, output, outputLevel, screenLevel, ftpClientLevel);
             await todo(context, ctx, logger);
         }
 
         private static async Task OutputToDoProgress(InvocationContext context, ProgressContext ctx, Func<InvocationContext, ProgressContext, Logger, Task> todo)
         {
-            using var logger = new Logger(context, output, outputLevel, log);
+            using var logger = new Logger(context, output, outputLevel, screenLevel, ftpClientLevel);
             await todo(context, ctx, logger);
         }
 
@@ -1518,7 +1522,6 @@ namespace FtpCmdline
             newPath.AddAlias("-n");
             localPath = new Option<string>("--localPath", () => "", "The local path to upload");
             localPath.AddAlias("-l");
-            log = new Option<bool>("--log", () => false, "Show log output");
             recursive = new Option<bool>("--recursive", () => false, "Go down the directory tree recursively");
             recursive.AddAlias("-r");
             exclude = new Option<string[]>("--exclude", "Exclude items in this list");
@@ -1529,7 +1532,9 @@ namespace FtpCmdline
             tree.AddAlias("-t");
             output = new Option<string>("--output", () => "", "Result output file");
             output.AddAlias("-o");
-            outputLevel = new Option<LogLevel>("--outputLevel", () => LogLevel.None, "The output file log level");
+            outputLevel = new Option<LogLevel>("--outputLevel", () => LogLevel.Info, "The output file log level");
+            screenLevel = new Option<LogLevel>("--screenLevel", () => LogLevel.Info, "The log level");
+            ftpClientLevel = new Option<LogLevel>("--ftpClientLevel", () => LogLevel.Warn, "The log level for FTP client");
             parallelTasks = new Option<int>("--parallel", () => 1, "The count of parallel upload streams");
 
             var rootCommand = new RootCommand("FTP Helper");
@@ -1539,7 +1544,9 @@ namespace FtpCmdline
             rootCommand.AddGlobalOption(pwd);
             rootCommand.AddGlobalOption(output);
             rootCommand.AddGlobalOption(outputLevel);
-            rootCommand.AddGlobalOption(log);
+            rootCommand.AddGlobalOption(screenLevel);
+            rootCommand.AddGlobalOption(ftpClientLevel);
+
 
             var listCommand = new Command("list", "List path content on host.")
                                             {
