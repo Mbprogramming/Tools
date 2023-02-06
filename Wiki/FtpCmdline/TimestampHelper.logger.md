@@ -1,11 +1,11 @@
 ### [FtpCmdline](FtpCmdline.md 'FtpCmdline').[TimestampHelper](TimestampHelper.md 'FtpCmdline.TimestampHelper')
 
-## TimestampHelper.logger Property
+## TimestampHelper.Logger Property
 
 logger
 
 ```csharp
-public FtpCmdline.Logger logger { get; set; }
+public FtpCmdline.Logger Logger { get; set; }
 ```
 
 #### Property Value

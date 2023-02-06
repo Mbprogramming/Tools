@@ -48,11 +48,29 @@
             </summary>
             <param name="message"></param>
         </member>
+        <member name="M:FtpCmdline.Logger.LogError(System.Object)">
+            <summary>
+            log error object
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:FtpCmdline.Logger.LogError(System.Exception)">
+            <summary>
+            log exception
+            </summary>
+            <param name="ex"></param>
+        </member>
         <member name="M:FtpCmdline.Logger.LogWarn(System.String)">
             <summary>
             Log Warning
             </summary>
             <param name="message"></param>
+        </member>
+        <member name="M:FtpCmdline.Logger.LogWarn(System.Object)">
+            <summary>
+            log warning object
+            </summary>
+            <param name="obj"></param>
         </member>
         <member name="M:FtpCmdline.Logger.LogInfo(System.String)">
             <summary>
@@ -60,11 +78,23 @@
             </summary>
             <param name="message"></param>
         </member>
+        <member name="M:FtpCmdline.Logger.LogInfo(System.Object)">
+            <summary>
+            log info object
+            </summary>
+            <param name="obj"></param>
+        </member>
         <member name="M:FtpCmdline.Logger.LogVerbose(System.String)">
             <summary>
             Log Verbose
             </summary>
             <param name="message"></param>
+        </member>
+        <member name="M:FtpCmdline.Logger.LogVerbose(System.Object)">
+            <summary>
+            log verbose object
+            </summary>
+            <param name="obj"></param>
         </member>
         <member name="M:FtpCmdline.Logger.Dispose">
             <summary>
@@ -303,7 +333,7 @@
             Timestamp Helper
             </summary>
         </member>
-        <member name="P:FtpCmdline.TimestampHelper.logger">
+        <member name="P:FtpCmdline.TimestampHelper.Logger">
             <summary>
             logger
             </summary>

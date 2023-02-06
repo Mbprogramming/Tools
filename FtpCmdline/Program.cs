@@ -261,18 +261,14 @@ namespace FtpCmdline
                                  using var client = await GetClient(context, ctx, logger);
                                  ctx.Status = "Info...";
 
-                                 logger.LogInfo(client.ServerType.ToString());
-                                 logger.LogInfo(client.ServerOS.ToString());
+                                 logger.LogInfo(client.ServerType);
+                                 logger.LogInfo(client.ServerOS);
 
                                  await client.Disconnect();
                              }
                              catch (Exception ex)
                              {
-                                 logger.LogError(ex.Message);
-                                 if (ex.InnerException != null)
-                                 {
-                                     logger.LogError(ex.InnerException.Message);
-                                 }
+                                 logger.LogError(ex);
                                  context.ExitCode = 1;
                              }
                          });
@@ -325,7 +321,7 @@ namespace FtpCmdline
                                               {
                                                   if (root != null)
                                                   {
-                                                      logger.LogInfo(root.ToString());
+                                                      logger.LogInfo(root);
                                                   }
                                                   root = new Tree(item.Name);
                                                   parents = new List<TreeNode>();
@@ -371,7 +367,7 @@ namespace FtpCmdline
                                   }
                                   if (treeValue && root != null)
                                   {
-                                      logger.LogInfo(root.ToString());
+                                      logger.LogInfo(root);
                                       logger.LogInfo("Found " + items.Where(w => w.Type == FtpObjectType.Directory).Count() + " items");                                  }
                                   else
                                   {
@@ -381,11 +377,7 @@ namespace FtpCmdline
                               }
                               catch (Exception ex)
                               {
-                                  logger.LogError(ex.Message);
-                                  if (ex.InnerException != null)
-                                  {
-                                      logger.LogError(ex.InnerException.Message);
-                                  }
+                                  logger.LogError(ex);
                                   context.ExitCode = 1;
                               }
                           });
@@ -434,10 +426,6 @@ namespace FtpCmdline
                                catch (Exception ex)
                                {
                                    logger.LogError(ex.Message);
-                                   if (ex.InnerException != null)
-                                   {
-                                       logger.LogError(ex.InnerException.Message);
-                                   }
                                    context.ExitCode = 1;
                                }
                            });
@@ -487,11 +475,7 @@ namespace FtpCmdline
                                }
                                catch (Exception ex)
                                {
-                                   logger.LogError(ex.Message);
-                                   if (ex.InnerException != null)
-                                   {
-                                       logger.LogError(ex.InnerException.Message);
-                                   }
+                                   logger.LogError(ex);
                                    context.ExitCode = 1;
                                }
                            });
@@ -539,11 +523,7 @@ namespace FtpCmdline
                                        }
                                        catch (Exception ex)
                                        {
-                                           logger.LogError(ex.Message);
-                                           if(ex.InnerException != null)
-                                           {
-                                               logger.LogError(ex.InnerException.Message);
-                                           }
+                                           logger.LogError(ex);
                                        }
                                    });
 
@@ -576,7 +556,6 @@ namespace FtpCmdline
                                                {
                                                    if (!client.IsConnected)
                                                    {
-                                                       // TODO: disable screen output
                                                        logger.LogWarn("Reconnect client");
                                                        mainTask.Description = "Reconnecting";
                                                        client.Dispose();
@@ -599,12 +578,7 @@ namespace FtpCmdline
                                                }
                                                catch (Exception ex)
                                                {
-                                                   logger.LogError(ex.Message);
-                                                   if (ex.InnerException != null)
-                                                   {
-                                                       logger.LogError(ex.InnerException.Message);
-                                                       AnsiConsole.WriteException(ex.InnerException);
-                                                   }
+                                                   logger.LogError(ex);
                                                    if (!client.IsConnected)
                                                    {
                                                        logger.LogWarn("Reconnect client");
@@ -669,7 +643,7 @@ namespace FtpCmdline
                                                }
                                                catch (Exception ex)
                                                {
-                                                   logger.LogError(ex.Message);
+                                                   logger.LogError(ex);
                                                }
                                            };
                                            overallTask.StartTask();
@@ -718,7 +692,7 @@ namespace FtpCmdline
                                                        }
                                                        catch (Exception ex)
                                                        {
-                                                           logger.LogError(ex.Message + "(" + localIndex + ") ");
+                                                           logger.LogError(ex);
                                                            if (!client.IsConnected)
                                                            {
                                                                logger.LogWarn("Reconnect client (" + localIndex + ")");
@@ -781,8 +755,7 @@ namespace FtpCmdline
                                                }
                                                catch (Exception ex)
                                                {
-                                                   AnsiConsole.WriteException(ex);
-                                                   logger.LogError(ex.Message);
+                                                   logger.LogError(ex);
                                                    if (!client.IsConnected)
                                                    {
                                                        logger.LogWarn("Reconnect client");
@@ -829,11 +802,7 @@ namespace FtpCmdline
                                }
                                catch (Exception ex)
                                {
-                                   logger.LogError(ex.Message);
-                                   if (ex.InnerException != null)
-                                   {
-                                       logger.LogError(ex.InnerException.Message);
-                                   }
+                                   logger.LogError(ex);
                                    context.ExitCode = 1;
                                }
                                mainTask.Value = 100.0;
@@ -878,11 +847,7 @@ namespace FtpCmdline
                                        }
                                        catch (Exception ex)
                                        {
-                                           logger.LogError(ex.Message);
-                                           if (ex.InnerException != null)
-                                           {
-                                               logger.LogError(ex.InnerException.Message);
-                                           }
+                                           logger.LogError(ex);
                                        }
                                    });
 
@@ -971,11 +936,7 @@ namespace FtpCmdline
                                            }
                                            catch (Exception ex)
                                            {
-                                               logger.LogError(ex.Message);
-                                               if (ex.InnerException != null)
-                                               {
-                                                   logger.LogError(ex.InnerException.Message);
-                                               }
+                                               logger.LogError(ex);
                                                if (!client.IsConnected)
                                                {
                                                    logger.LogWarn("Reconnect client");
@@ -1019,11 +980,7 @@ namespace FtpCmdline
                                }
                                catch (Exception ex)
                                {
-                                   logger.LogError(ex.Message);
-                                   if (ex.InnerException != null)
-                                   {
-                                       logger.LogError(ex.InnerException.Message);
-                                   }
+                                   logger.LogError(ex);
                                    context.ExitCode = 1;
                                }
                            });
@@ -1065,7 +1022,7 @@ namespace FtpCmdline
                                        }
                                        catch (Exception ex)
                                        {
-                                           AnsiConsole.WriteException(ex);
+                                           logger.LogError(ex);
                                        }
                                    });
 
@@ -1098,11 +1055,7 @@ namespace FtpCmdline
                                }
                                catch (Exception ex)
                                {
-                                   logger.LogError(ex.Message);
-                                   if (ex.InnerException != null)
-                                   {
-                                       logger.LogError(ex.InnerException.Message);
-                                   }
+                                   logger.LogError(ex);
                                    context.ExitCode = 1;
                                }
                            });
@@ -1150,11 +1103,7 @@ namespace FtpCmdline
                                        }
                                        catch (Exception ex)
                                        {
-                                           logger.LogError(ex.Message);
-                                           if (ex.InnerException != null)
-                                           {
-                                               logger.LogError(ex.InnerException.Message);
-                                           }
+                                           logger.LogError(ex);
                                        }
                                    });
 
@@ -1214,7 +1163,7 @@ namespace FtpCmdline
                                                    }
                                                    catch (Exception ex)
                                                    {
-                                                       logger.LogError(ex.Message);
+                                                       logger.LogError(ex);
                                                    }
                                                };
                                                overallTask.StartTask();
@@ -1257,11 +1206,7 @@ namespace FtpCmdline
                                                            }
                                                            catch (Exception ex)
                                                            {
-                                                               logger.LogError(ex.Message + "(" + localIndex + ") " + toCopy);
-                                                               if (ex.InnerException != null)
-                                                               {
-                                                                   logger.LogError(ex.InnerException.Message + "(" + localIndex + ") ");
-                                                               }
+                                                               logger.LogError(ex);
                                                                if (!clientIntern.IsConnected)
                                                                {
                                                                    logger.LogWarn("Reconnect client (" + localIndex + ")");
@@ -1293,7 +1238,7 @@ namespace FtpCmdline
                                                overallTask.StopTask();
                                            }
                                            mainTask.Value = 100;
-                                           AnsiConsole.WriteLine("Directory downloaded");
+                                           logger.StopInProgress();
                                            logger.LogInfo("Directory downloaded");
                                            context.ExitCode = 0;
                                            return;
@@ -1312,7 +1257,7 @@ namespace FtpCmdline
                                        }
                                        mainTask.Value = 100;
                                        logger.StopInProgress();
-                                       AnsiConsole.WriteLine("Directory downloaded");
+                                       logger.LogInfo("Directory downloaded");
                                        context.ExitCode = 0;
                                    }
                                    else if (await client.FileExists(pathValue, context.GetCancellationToken()))
@@ -1341,11 +1286,7 @@ namespace FtpCmdline
                                }
                                catch (Exception ex)
                                {
-                                   logger.LogError(ex.Message);
-                                   if (ex.InnerException != null)
-                                   {
-                                       logger.LogError(ex.InnerException.Message);
-                                   }
+                                   logger.LogError(ex);
                                    context.ExitCode = 1;
                                }
                            });
@@ -1401,8 +1342,9 @@ namespace FtpCmdline
                                               index++;
                                               deleted++;
                                           }
-                                          catch (Exception)
+                                          catch (Exception ex)
                                           {
+                                              logger.LogError(ex);
                                               if (!client.IsConnected)
                                               {
                                                   ctx.Status("Reconnecting");
@@ -1449,8 +1391,9 @@ namespace FtpCmdline
                                               deleted++;
 
                                           }
-                                          catch (Exception)
+                                          catch (Exception ex)
                                           {
+                                              logger.LogError(ex);
                                               if (!client.IsConnected)
                                               {
                                                   logger.LogWarn("Reconnecting");
@@ -1473,18 +1416,13 @@ namespace FtpCmdline
                                           }
                                       }
                                   }
-                                  AnsiConsole.WriteLine("Delete " + deleted + " of " + items.Count() + " items");
                                   logger.LogInfo("Delete " + deleted + " of " + items.Count() + " items");
                                   await client.Disconnect();
                                   client.Dispose();
                               }
                               catch (Exception ex)
                               {
-                                  logger.LogError(ex.Message);
-                                  if (ex.InnerException != null)
-                                  {
-                                      logger.LogError(ex.InnerException.Message);
-                                  }
+                                  logger.LogError(ex);
                                   context.ExitCode = 1;
                               }
                           });

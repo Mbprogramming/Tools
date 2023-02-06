@@ -16,11 +16,9 @@ namespace FtpCmdline
         private LogLevel _screenLevel = LogLevel.Info;
         private LogLevel _ftpClientLevel = LogLevel.Warn;
         
-        private readonly bool? _verboseConsole;
         private readonly StreamWriter? _outputFile = null;
         private readonly object _outputLock = new();
 
-        private LogLevel _oldLevel = LogLevel.Info;
         private LogLevel _oldScreenLevel = LogLevel.Info;
         private LogLevel _oldFtpClientLevel = LogLevel.Warn;
 
@@ -94,6 +92,71 @@ namespace FtpCmdline
             }
         }
 
+        private void LogErrorFtp(Exception ex)
+        {
+            if (_outputFile != null && _ftpClientLevel >= LogLevel.Error)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(ex.Message);
+                    if (!string.IsNullOrEmpty(ex.StackTrace))
+                        _outputFile.WriteLine(ex.StackTrace);
+                }
+            }
+            if (_screenLevel >= LogLevel.Error)
+            {
+                AnsiConsole.WriteException(ex);
+            }
+            if (ex.InnerException != null)
+            {
+                LogError(ex.InnerException);
+            }
+        }
+
+        /// <summary>
+        /// log error object
+        /// </summary>
+        /// <param name="obj"></param>
+        public void LogError(object obj)
+        {
+            if (_outputFile != null && _level >= LogLevel.Error)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(obj.ToString());
+                }
+            }
+            if (_screenLevel >= LogLevel.Error)
+            {
+                AnsiConsole.WriteLine(obj.ToString() ?? "");
+            }
+        }
+
+        /// <summary>
+        /// log exception
+        /// </summary>
+        /// <param name="ex"></param>
+        public void LogError(Exception ex)
+        {
+            if (_outputFile != null && _level >= LogLevel.Error)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(ex.Message);
+                    if(!string.IsNullOrEmpty(ex.StackTrace))
+                        _outputFile.WriteLine(ex.StackTrace);
+                }
+            }
+            if (_screenLevel >= LogLevel.Error)
+            {
+                AnsiConsole.WriteException(ex);
+            }
+            if (ex.InnerException != null)
+            {
+                LogError(ex.InnerException);
+            }
+        }
+
         /// <summary>
         /// Log Warning
         /// </summary>
@@ -125,6 +188,25 @@ namespace FtpCmdline
             if (_ftpClientLevel >= LogLevel.Warn)
             {
                 AnsiConsole.WriteLine(message);
+            }
+        }
+        
+        /// <summary>
+        /// log warning object
+        /// </summary>
+        /// <param name="obj"></param>
+        public void LogWarn(object obj)
+        {
+            if (_outputFile != null && _level >= LogLevel.Warn)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(obj.ToString());
+                }
+            }
+            if (_screenLevel >= LogLevel.Warn)
+            {
+                AnsiConsole.WriteLine(obj.ToString() ?? "");
             }
         }
 
@@ -163,6 +245,25 @@ namespace FtpCmdline
         }
 
         /// <summary>
+        /// log info object
+        /// </summary>
+        /// <param name="obj"></param>
+        public void LogInfo(object obj)
+        {
+            if (_outputFile != null && _level >= LogLevel.Info)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(obj.ToString());
+                }
+            }
+            if (_screenLevel >= LogLevel.Info)
+            {
+                AnsiConsole.WriteLine(obj.ToString() ?? "");
+            }
+        }
+
+        /// <summary>
         /// Log Verbose
         /// </summary>
         /// <param name="message"></param>
@@ -197,6 +298,24 @@ namespace FtpCmdline
         }
 
         /// <summary>
+        /// log verbose object
+        /// </summary>
+        /// <param name="obj"></param>
+        public void LogVerbose(object obj)
+        {
+            if (_outputFile != null && _level >= LogLevel.Verbose)
+            {
+                lock (_outputLock)
+                {
+                    _outputFile.WriteLine(obj.ToString());
+                }
+            }
+            if (_screenLevel >= LogLevel.Verbose)
+            {
+                AnsiConsole.WriteLine(obj.ToString() ?? "");
+            }
+        }
+        /// <summary>
         /// interface implementation
         /// </summary>
         /// <inheritdoc/>
@@ -228,7 +347,7 @@ namespace FtpCmdline
                     LogErrorFtp(entry.Message);
                     if (entry.Exception != null)
                     {
-                        LogErrorFtp(entry.Exception.Message);
+                        LogErrorFtp(entry.Exception);
                     }
                     break;
             }

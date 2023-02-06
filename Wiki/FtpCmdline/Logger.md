@@ -26,8 +26,13 @@ Implements [FluentFTP.IFtpLogger](https://docs.microsoft.com/en-us/dotnet/api/Fl
 | :--- | :--- |
 | [Dispose()](Logger.Dispose().md 'FtpCmdline.Logger.Dispose()') | Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources. |
 | [DoInProgress()](Logger.DoInProgress().md 'FtpCmdline.Logger.DoInProgress()') | set in progress |
+| [LogError(object)](Logger.LogError(object).md 'FtpCmdline.Logger.LogError(object)') | log error object |
 | [LogError(string)](Logger.LogError(string).md 'FtpCmdline.Logger.LogError(string)') | Log Error |
+| [LogError(Exception)](Logger.LogError(Exception).md 'FtpCmdline.Logger.LogError(System.Exception)') | log exception |
+| [LogInfo(object)](Logger.LogInfo(object).md 'FtpCmdline.Logger.LogInfo(object)') | log info object |
 | [LogInfo(string)](Logger.LogInfo(string).md 'FtpCmdline.Logger.LogInfo(string)') | Log Info |
+| [LogVerbose(object)](Logger.LogVerbose(object).md 'FtpCmdline.Logger.LogVerbose(object)') | log verbose object |
 | [LogVerbose(string)](Logger.LogVerbose(string).md 'FtpCmdline.Logger.LogVerbose(string)') | Log Verbose |
+| [LogWarn(object)](Logger.LogWarn(object).md 'FtpCmdline.Logger.LogWarn(object)') | log warning object |
 | [LogWarn(string)](Logger.LogWarn(string).md 'FtpCmdline.Logger.LogWarn(string)') | Log Warning |
 | [StopInProgress()](Logger.StopInProgress().md 'FtpCmdline.Logger.StopInProgress()') | set no in progress |

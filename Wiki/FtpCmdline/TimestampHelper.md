@@ -19,7 +19,7 @@ Implements [System.IDisposable](https://docs.microsoft.com/en-us/dotnet/api/Syst
 
 | Properties | |
 | :--- | :--- |
-| [logger](TimestampHelper.logger.md 'FtpCmdline.TimestampHelper.logger') | logger |
+| [Logger](TimestampHelper.Logger.md 'FtpCmdline.TimestampHelper.Logger') | logger |
 
 | Methods | |
 | :--- | :--- |

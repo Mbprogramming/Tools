@@ -15,9 +15,9 @@ namespace FtpCmdline
         /// <summary>
         /// logger
         /// </summary>
-        public Logger logger { get; set; }
+        public Logger Logger { get; set; }
 
-        private DateTimeOffset _timestamp;
+        private readonly DateTimeOffset _timestamp;
         /// <summary>
         /// constructor
         /// </summary>
@@ -28,7 +28,7 @@ namespace FtpCmdline
         public TimestampHelper(Logger _logger) 
         {
             _timestamp = DateTimeOffset.Now;
-            logger = _logger;
+            Logger = _logger;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace FtpCmdline
         public void Dispose()
         {
             var ts = $"Duration {DateTimeOffset.Now - _timestamp}";
-            logger.LogInfo(ts);
+            Logger.LogInfo(ts);
         }
     }
 }
