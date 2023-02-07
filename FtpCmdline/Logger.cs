@@ -55,7 +55,7 @@ namespace FtpCmdline
         /// </summary>
         public bool LogToConsole
         {
-            get => _screenLevel == LogLevel.Verbose;
+            get => _ftpClientLevel == LogLevel.Verbose;
         }
 
         /// <summary>

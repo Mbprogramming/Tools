@@ -1314,7 +1314,7 @@ namespace FtpCmdline
                                   var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
                                   var recursiveValue = recursive != null ? context.ParseResult.GetValueForOption(recursive) : false;
                                   var excludeValue = exclude != null ? context.ParseResult.GetValueForOption(exclude) : null;
-
+                                  logger.DoInProgress();
                                   var client = await GetClient(context, ctx, logger);
                                   ctx.Status = "Prepare clear...";
                                   logger.LogVerbose("Count files and folders");
@@ -1340,7 +1340,7 @@ namespace FtpCmdline
                                               logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteFile(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete file " + item.FullName + " (" + index + " of " + files.Count + ")");
-                                              logger.LogVerbose("Delete " + item.FullName + " (" + index + " of " + files.Count + ")");
+                                              logger.LogInfo("Delete " + item.FullName + " (" + index + " of " + files.Count + ")");
                                               index++;
                                               deleted++;
                                           }
@@ -1357,7 +1357,7 @@ namespace FtpCmdline
                                               logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteFile(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete file " + item.FullName + " (" + index + " of " + files.Count + ")");
-                                              logger.LogVerbose("Delete " + item.FullName + " (" + index + " of " + files.Count + ")");
+                                              logger.LogInfo("Delete " + item.FullName + " (" + index + " of " + files.Count + ")");
                                               index++;
                                               deleted++;
                                           }
@@ -1382,7 +1382,7 @@ namespace FtpCmdline
                                               var filesInPath = await client.GetNameListing(item.FullName, context.GetCancellationToken());
                                               if (filesInPath != null && filesInPath.Count() > 0)
                                               {
-                                                  logger.LogVerbose(item.FullName + " contains files");
+                                                  logger.LogInfo(item.FullName + " contains files");
                                                   continue;
                                               }
                                               logger.LogVerbose("Try to delete " + item.FullName);
@@ -1418,6 +1418,7 @@ namespace FtpCmdline
                                           }
                                       }
                                   }
+                                  logger.StopInProgress();
                                   logger.LogInfo("Delete " + deleted + " of " + items.Count() + " items");
                                   await client.Disconnect();
                                   client.Dispose();
