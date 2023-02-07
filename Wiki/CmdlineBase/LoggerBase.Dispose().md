@@ -1,6 +1,6 @@
-### [FtpCmdline](FtpCmdline.md 'FtpCmdline').[Logger](Logger.md 'FtpCmdline.Logger')
+### [CmdlineBase](CmdlineBase.md 'CmdlineBase').[LoggerBase](LoggerBase.md 'CmdlineBase.LoggerBase')
 
-## Logger.Dispose() Method
+## LoggerBase.Dispose() Method
 
 Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
 

@@ -5,5 +5,5 @@
 set in progress
 
 ```csharp
-public void DoInProgress();
+public override void DoInProgress();
 ```

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33209.295
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FtpCmdline", "FtpCmdline\FtpCmdline.csproj", "{94C98C0A-A131-472A-A29C-671D8F3216E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FtpCmdline", "FtpCmdline\FtpCmdline.csproj", "{94C98C0A-A131-472A-A29C-671D8F3216E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmdlineBase", "CmdlineBase\CmdlineBase.csproj", "{DA6C2B35-91CC-43E7-BDC2-DF1F3EF321B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{94C98C0A-A131-472A-A29C-671D8F3216E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94C98C0A-A131-472A-A29C-671D8F3216E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94C98C0A-A131-472A-A29C-671D8F3216E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA6C2B35-91CC-43E7-BDC2-DF1F3EF321B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6C2B35-91CC-43E7-BDC2-DF1F3EF321B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6C2B35-91CC-43E7-BDC2-DF1F3EF321B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6C2B35-91CC-43E7-BDC2-DF1F3EF321B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

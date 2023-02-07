@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CmdlineBase</name>
+    </assembly>
+    <members>
+        <member name="T:CmdlineBase.LoggerBase">
+            <summary>
+            general logger
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LoggerBase._outputPath">
+            <summary>
+            output file path
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LoggerBase._level">
+            <summary>
+            log level for output file
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LoggerBase._screenLevel">
+            <summary>
+            log level for screeb
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LoggerBase._outputFile">
+            <summary>
+            output file
+            </summary>        
+        </member>
+        <member name="F:CmdlineBase.LoggerBase._outputLock">
+            <summary>
+            lock to write file from different threads
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LoggerBase._oldScreenLevel">
+            <summary>
+            old screen level to disable output during progress
+            </summary>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.#ctor(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option{System.String},System.CommandLine.Option{CmdlineBase.LogLevel},System.CommandLine.Option{CmdlineBase.LogLevel})">
+            <summary>
+            constructor
+            </summary>
+            <param name="context"></param>
+            <param name="output"></param>
+            <param name="level"></param>
+            <param name="screenLevel"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogError(System.String)">
+            <summary>
+            Log Error
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogError(System.Object)">
+            <summary>
+            log error object
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogError(System.Exception)">
+            <summary>
+            log exception
+            </summary>
+            <param name="ex"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogWarn(System.String)">
+            <summary>
+            Log Warning
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogWarn(System.Object)">
+            <summary>
+            log warning object
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogInfo(System.String)">
+            <summary>
+            Log Info
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogInfo(System.Object)">
+            <summary>
+            log info object
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogVerbose(System.String)">
+            <summary>
+            Log Verbose
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.LogVerbose(System.Object)">
+            <summary>
+            log verbose object
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.Dispose">
+            <summary>
+            interface implementation
+            </summary>
+            <inheritdoc/>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.DoInProgress">
+            <summary>
+            set in progress
+            </summary>
+        </member>
+        <member name="M:CmdlineBase.LoggerBase.StopInProgress">
+            <summary>
+            set no in progress
+            </summary>
+        </member>
+        <member name="T:CmdlineBase.LogLevel">
+            <summary>
+            Log Level for FluentFTP Logging in output file
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LogLevel.None">
+            <summary>
+            No logging
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LogLevel.Verbose">
+            <summary>
+            log all
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LogLevel.Info">
+            <summary>
+            log infos, warnings and errors
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LogLevel.Warn">
+            <summary>
+            log warnings and errors
+            </summary>
+        </member>
+        <member name="F:CmdlineBase.LogLevel.Error">
+            <summary>
+            log only errors
+            </summary>
+        </member>
+        <member name="T:CmdlineBase.TimestampHelper">
+            <summary>
+            Timestamp Helper
+            </summary>
+        </member>
+        <member name="P:CmdlineBase.TimestampHelper.Logger">
+            <summary>
+            logger
+            </summary>
+        </member>
+        <member name="M:CmdlineBase.TimestampHelper.#ctor(CmdlineBase.LoggerBase)">
+            <summary>
+            constructor
+            </summary>
+            <param name="_logger"></param>
+            <remarks>
+            starts the timer
+            </remarks>
+        </member>
+        <member name="M:CmdlineBase.TimestampHelper.Dispose">
+            <summary>
+            stops the timer and output duration
+            </summary>
+        </member>
+    </members>
+</doc>

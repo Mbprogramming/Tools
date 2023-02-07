@@ -5,26 +5,26 @@
 constructor
 
 ```csharp
-public Logger(System.CommandLine.Invocation.InvocationContext context, System.CommandLine.Option<string>? output, System.CommandLine.Option<FtpCmdline.LogLevel>? level, System.CommandLine.Option<FtpCmdline.LogLevel>? screenLevel, System.CommandLine.Option<FtpCmdline.LogLevel>? ftpClientLevel);
+public Logger(System.CommandLine.Invocation.InvocationContext context, System.CommandLine.Option<string>? output, System.CommandLine.Option<CmdlineBase.LogLevel>? level, System.CommandLine.Option<CmdlineBase.LogLevel>? screenLevel, System.CommandLine.Option<CmdlineBase.LogLevel>? ftpClientLevel);
 ```
 #### Parameters
 
-<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_).context'></a>
+<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_).context'></a>
 
 `context` [System.CommandLine.Invocation.InvocationContext](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Invocation.InvocationContext 'System.CommandLine.Invocation.InvocationContext')
 
-<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_).output'></a>
+<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_).output'></a>
 
 `output` [System.CommandLine.Option&lt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')[System.String](https://docs.microsoft.com/en-us/dotnet/api/System.String 'System.String')[&gt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')
 
-<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_).level'></a>
+<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_).level'></a>
 
-`level` [System.CommandLine.Option&lt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')[LogLevel](LogLevel.md 'FtpCmdline.LogLevel')[&gt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')
+`level` [System.CommandLine.Option&lt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')[CmdlineBase.LogLevel](https://docs.microsoft.com/en-us/dotnet/api/CmdlineBase.LogLevel 'CmdlineBase.LogLevel')[&gt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')
 
-<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_).screenLevel'></a>
+<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_).screenLevel'></a>
 
-`screenLevel` [System.CommandLine.Option&lt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')[LogLevel](LogLevel.md 'FtpCmdline.LogLevel')[&gt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')
+`screenLevel` [System.CommandLine.Option&lt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')[CmdlineBase.LogLevel](https://docs.microsoft.com/en-us/dotnet/api/CmdlineBase.LogLevel 'CmdlineBase.LogLevel')[&gt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')
 
-<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_,System.CommandLine.Option_FtpCmdline.LogLevel_).ftpClientLevel'></a>
+<a name='FtpCmdline.Logger.Logger(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option_string_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_,System.CommandLine.Option_CmdlineBase.LogLevel_).ftpClientLevel'></a>
 
-`ftpClientLevel` [System.CommandLine.Option&lt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')[LogLevel](LogLevel.md 'FtpCmdline.LogLevel')[&gt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')
+`ftpClientLevel` [System.CommandLine.Option&lt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')[CmdlineBase.LogLevel](https://docs.microsoft.com/en-us/dotnet/api/CmdlineBase.LogLevel 'CmdlineBase.LogLevel')[&gt;](https://docs.microsoft.com/en-us/dotnet/api/System.CommandLine.Option-1 'System.CommandLine.Option`1')

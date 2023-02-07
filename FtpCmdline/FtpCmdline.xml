@@ -4,30 +4,22 @@
         <name>FtpCmdline</name>
     </assembly>
     <members>
-        <member name="T:FtpCmdline.FileLogger">
-            <summary>
-            file logger class for FluentFTP client
-            </summary>
-        </member>
-        <member name="M:FtpCmdline.FileLogger.#ctor(System.IO.StreamWriter,FtpCmdline.LogLevel)">
-            <summary>
-            constructor
-            </summary>
-            <param name="writer"></param>
-            <param name="level"></param>
-        </member>
-        <member name="M:FtpCmdline.FileLogger.Log(FluentFTP.FtpLogEntry)">
-            <summary>
-            write log entry to file
-            </summary>
-            <param name="entry"></param>
-        </member>
         <member name="T:FtpCmdline.Logger">
             <summary>
             general logger
             </summary>
         </member>
-        <member name="M:FtpCmdline.Logger.#ctor(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option{System.String},System.CommandLine.Option{FtpCmdline.LogLevel},System.CommandLine.Option{FtpCmdline.LogLevel},System.CommandLine.Option{FtpCmdline.LogLevel})">
+        <member name="F:FtpCmdline.Logger._ftpClientLevel">
+            <summary>
+            ftp client log level
+            </summary>
+        </member>
+        <member name="F:FtpCmdline.Logger._oldFtpClientLevel">
+            <summary>
+            ftp client old log level for progress functions
+            </summary>
+        </member>
+        <member name="M:FtpCmdline.Logger.#ctor(System.CommandLine.Invocation.InvocationContext,System.CommandLine.Option{System.String},System.CommandLine.Option{CmdlineBase.LogLevel},System.CommandLine.Option{CmdlineBase.LogLevel},System.CommandLine.Option{CmdlineBase.LogLevel})">
             <summary>
             constructor
             </summary>
@@ -41,66 +33,6 @@
             <summary>
             log to console
             </summary>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogError(System.String)">
-            <summary>
-            Log Error
-            </summary>
-            <param name="message"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogError(System.Object)">
-            <summary>
-            log error object
-            </summary>
-            <param name="obj"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogError(System.Exception)">
-            <summary>
-            log exception
-            </summary>
-            <param name="ex"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogWarn(System.String)">
-            <summary>
-            Log Warning
-            </summary>
-            <param name="message"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogWarn(System.Object)">
-            <summary>
-            log warning object
-            </summary>
-            <param name="obj"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogInfo(System.String)">
-            <summary>
-            Log Info
-            </summary>
-            <param name="message"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogInfo(System.Object)">
-            <summary>
-            log info object
-            </summary>
-            <param name="obj"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogVerbose(System.String)">
-            <summary>
-            Log Verbose
-            </summary>
-            <param name="message"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.LogVerbose(System.Object)">
-            <summary>
-            log verbose object
-            </summary>
-            <param name="obj"></param>
-        </member>
-        <member name="M:FtpCmdline.Logger.Dispose">
-            <summary>
-            interface implementation
-            </summary>
-            <inheritdoc/>
         </member>
         <member name="M:FtpCmdline.Logger.Log(FluentFTP.FtpLogEntry)">
             <summary>
@@ -117,36 +49,6 @@
         <member name="M:FtpCmdline.Logger.StopInProgress">
             <summary>
             set no in progress
-            </summary>
-        </member>
-        <member name="T:FtpCmdline.LogLevel">
-            <summary>
-            Log Level for FluentFTP Logging in output file
-            </summary>
-        </member>
-        <member name="F:FtpCmdline.LogLevel.None">
-            <summary>
-            No logging
-            </summary>
-        </member>
-        <member name="F:FtpCmdline.LogLevel.Verbose">
-            <summary>
-            log all
-            </summary>
-        </member>
-        <member name="F:FtpCmdline.LogLevel.Info">
-            <summary>
-            log infos, warnings and errors
-            </summary>
-        </member>
-        <member name="F:FtpCmdline.LogLevel.Warn">
-            <summary>
-            log warnings and errors
-            </summary>
-        </member>
-        <member name="F:FtpCmdline.LogLevel.Error">
-            <summary>
-            log only errors
             </summary>
         </member>
         <member name="T:FtpCmdline.Program">
@@ -327,30 +229,6 @@
             </remarks>
             <param name="args">command line parameter</param>
             <returns></returns>
-        </member>
-        <member name="T:FtpCmdline.TimestampHelper">
-            <summary>
-            Timestamp Helper
-            </summary>
-        </member>
-        <member name="P:FtpCmdline.TimestampHelper.Logger">
-            <summary>
-            logger
-            </summary>
-        </member>
-        <member name="M:FtpCmdline.TimestampHelper.#ctor(FtpCmdline.Logger)">
-            <summary>
-            constructor
-            </summary>
-            <param name="_logger"></param>
-            <remarks>
-            starts the timer
-            </remarks>
-        </member>
-        <member name="M:FtpCmdline.TimestampHelper.Dispose">
-            <summary>
-            stops the timer and output duration
-            </summary>
         </member>
     </members>
 </doc>

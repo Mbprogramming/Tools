@@ -1,4 +1,4 @@
-### [FtpCmdline](FtpCmdline.md 'FtpCmdline').[TimestampHelper](TimestampHelper.md 'FtpCmdline.TimestampHelper')
+### [CmdlineBase](CmdlineBase.md 'CmdlineBase').[TimestampHelper](TimestampHelper.md 'CmdlineBase.TimestampHelper')
 
 ## TimestampHelper.Dispose() Method
 

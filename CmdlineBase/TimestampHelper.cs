@@ -1,11 +1,4 @@
-﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FtpCmdline
+﻿namespace CmdlineBase
 {
     /// <summary>
     /// Timestamp Helper
@@ -15,7 +8,7 @@ namespace FtpCmdline
         /// <summary>
         /// logger
         /// </summary>
-        public Logger Logger { get; set; }
+        public LoggerBase Logger { get; set; }
 
         private readonly DateTimeOffset _timestamp;
         /// <summary>
@@ -25,7 +18,7 @@ namespace FtpCmdline
         /// <remarks>
         /// starts the timer
         /// </remarks>
-        public TimestampHelper(Logger _logger) 
+        public TimestampHelper(LoggerBase _logger)
         {
             _timestamp = DateTimeOffset.Now;
             Logger = _logger;

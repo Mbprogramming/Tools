@@ -1,18 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
 	<PropertyGroup>
-		<OutputType>Exe</OutputType>
 		<TargetFramework>net7.0</TargetFramework>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<DocumentationFile>FtpCmdline.xml</DocumentationFile>
-		<RunPostBuildEvent>Always</RunPostBuildEvent>
+		<DocumentationFile>CmdlineBase.xml</DocumentationFile>
 	</PropertyGroup>
-
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<DefaultDocumentationFolder>..\Wiki\FtpCmdline</DefaultDocumentationFolder>
-		<DefaultDocumentationHome>FtpCmdline</DefaultDocumentationHome>
+		<DefaultDocumentationFolder>..\Wiki\CmdlineBase</DefaultDocumentationFolder>
+		<DefaultDocumentationHome>CmdlineBase</DefaultDocumentationHome>
 		<DefaultDocumentationFileNameFactory>Name</DefaultDocumentationFileNameFactory>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
@@ -23,13 +21,11 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="FluentFTP" Version="44.0.1" />
 		<PackageReference Include="Spectre.Console" Version="0.46.0" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
 		<PackageReference Include="System.CommandLine.Rendering" Version="0.4.0-alpha.22272.1" />
 	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\CmdlineBase\CmdlineBase.csproj" />
-	</ItemGroup>
-	
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+		<Exec Command="py ..\set_version.py ..\" />
+	</Target>
 </Project>
