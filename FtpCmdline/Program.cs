@@ -3,6 +3,7 @@ using FluentFTP;
 using Spectre.Console;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 
 namespace FtpCmdline
@@ -154,6 +155,12 @@ namespace FtpCmdline
                 var userValue = user != null ? context.ParseResult.GetValueForOption(user) : string.Empty;
                 var pwdValue = pwd != null ? context.ParseResult.GetValueForOption(pwd) : string.Empty;
 
+                if(string.IsNullOrEmpty(userValue) || string.IsNullOrEmpty(pwdValue))
+                {
+                    userValue = "anonymous";
+                    pwdValue = "anonymous";
+                }
+
                 if (!supressStatus)
                 {
                     context2.Status = "Connecting...";
@@ -187,6 +194,12 @@ namespace FtpCmdline
                 var hostValue = host != null ? context.ParseResult.GetValueForOption(host) : string.Empty;
                 var userValue = user != null ? context.ParseResult.GetValueForOption(user) : string.Empty;
                 var pwdValue = pwd != null ? context.ParseResult.GetValueForOption(pwd) : string.Empty;
+
+                if (string.IsNullOrEmpty(userValue) || string.IsNullOrEmpty(pwdValue))
+                {
+                    userValue = "anonymous";
+                    pwdValue = "anonymous";
+                }
 
                 if (!supressStatus)
                 {
@@ -963,7 +976,7 @@ namespace FtpCmdline
                                        logger.LogInfo("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)");
                                        context.ExitCode = 0;
                                    }
-                                   else if (System.IO.File.Exists(localPathValue))
+                                   else if (File.Exists(localPathValue))
                                    {
                                        var client = await GetClient(context, ctx, logger);
                                        logger.LogVerbose("Try to copy " + localPathValue);
