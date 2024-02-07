@@ -1,11 +1,11 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33209.295
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FtpCmdline", "FtpCmdline\FtpCmdline.csproj", "{94C98C0A-A131-472A-A29C-671D8F3216E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmdlineBase", "CmdlineBase\CmdlineBase.csproj", "{DA6C2B35-91CC-43E7-BDC2-DF1F3EF321B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmdlineBase", "CmdlineBase\CmdlineBase.csproj", "{DA6C2B35-91CC-43E7-BDC2-DF1F3EF321B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
