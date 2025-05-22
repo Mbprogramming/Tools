@@ -168,7 +168,6 @@ namespace FtpCmdline
 
                 var client = new AsyncFtpClient(hostValue, userValue, pwdValue, 0, null, logger);
                 client.Config.LogToConsole = logger.LogToConsole;
-                client.Config.SslBuffering = FtpsBuffering.Off;
                 await client.AutoConnect(context.GetCancellationToken());
 
                 return client;
@@ -209,7 +208,6 @@ namespace FtpCmdline
 
                 var client = new AsyncFtpClient(hostValue, userValue, pwdValue, 0, null, logger);
                 client.Config.LogToConsole = logger.LogToConsole;
-                client.Config.SslBuffering = FtpsBuffering.Off;
                 await client.AutoConnect(context.GetCancellationToken());
 
                 return client;
