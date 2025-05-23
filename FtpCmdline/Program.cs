@@ -641,6 +641,7 @@ namespace FtpCmdline
                                            object lockObj = new();
 
                                            var overallTask = ctx.AddTask(TrimPad("Overall", 60));
+                                           var tempTitle = Console.Title;
                                            var refreshOverall = () =>
                                            {
                                                try
@@ -653,6 +654,7 @@ namespace FtpCmdline
                                                    if (overallProgress > double.MinValue)
                                                    {
                                                        overallTask.Value = overallProgress;
+                                                       Console.Title = overallProgress.ToString() + "%";
                                                    }
                                                }
                                                catch (Exception ex)
@@ -737,6 +739,7 @@ namespace FtpCmdline
                                            await Task.WhenAll(taskList);
                                            fileUpload = allFiles;
                                            overallTask.StopTask();
+                                           Console.Title = tempTitle;
                                        }
                                        else
                                        {
@@ -848,15 +851,18 @@ namespace FtpCmdline
                                    var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
 
                                    ctx.Status = "Prepare Upload...";
+                                   var title = Console.Title;
 
                                    Progress<FtpProgress> progress = new(p =>
                                    {
                                        ctx.Status("Upload " + currentFile + " of " + allFiles + " (" + p.TransferSpeedToString() + ") " + p.RemotePath + " " + (int)p.Progress + "%");
+                                       Console.Title = (int)p.Progress + "%";
                                        try
                                        {
                                            if ((int)p.Progress == 100)
                                            {
                                                logger.LogInfo("Upload " + p.RemotePath);
+                                               Console.Title = title;
                                            }
                                        }
                                        catch (Exception ex)
@@ -1023,15 +1029,17 @@ namespace FtpCmdline
 
                                    using var client = await GetClient(context, ctx, logger);
                                    ctx.Status = "Prepare Download...";
-
+                                   var tempTitle = Console.Title;
                                    Progress<FtpProgress> progress = new(p =>
                                    {
                                        ctx.Status("Download " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.LocalPath + " " + (int)p.Progress + "%");
                                        try
                                        {
+                                           Console.Title = (int)p.Progress + "%";
                                            if ((int)p.Progress == 100)
                                            {
                                                logger.LogInfo("Upload " + p.RemotePath);
+                                               Console.Title = tempTitle;
                                            }
                                        }
                                        catch (Exception ex)
@@ -1161,6 +1169,7 @@ namespace FtpCmdline
                                                object lockObj2 = new();
 
                                                var overallTask = ctx.AddTask(TrimPad("Overall", 60));
+                                               var tempTitle = Console.Title;
                                                var refreshOverall = () =>
                                                {
                                                    try
@@ -1173,6 +1182,7 @@ namespace FtpCmdline
                                                        if (overallProgress > double.MinValue)
                                                        {
                                                            overallTask.Value = overallProgress;
+                                                           Console.Title = overallProgress.ToString() + "%";
                                                        }
                                                    }
                                                    catch (Exception ex)
@@ -1250,6 +1260,7 @@ namespace FtpCmdline
                                                }
                                                await Task.WhenAll(taskList);
                                                overallTask.StopTask();
+                                               Console.Title = tempTitle;
                                            }
                                            mainTask.Value = 100;
                                            logger.StopInProgress();
