@@ -6,6 +6,8 @@ using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 
+#pragma warning disable CA1416 // Validate platform compatibility
+
 namespace FtpCmdline
 {
     /// <summary>
@@ -519,15 +521,18 @@ namespace FtpCmdline
                                {
                                    var localPathValue = localPath != null ? context.ParseResult.GetValueForOption(localPath) : string.Empty;
                                    var pathValue = path != null ? context.ParseResult.GetValueForOption(path) : string.Empty;
-                                   var skipValue = skip != null ? context.ParseResult.GetValueForOption(skip) : true;
+                                   var skipValue = skip == null || context.ParseResult.GetValueForOption(skip);
                                    var parallelTaskValue = parallelTasks != null ? context.ParseResult.GetValueForOption(parallelTasks) : 1;
 
                                    mainTask.Description = "Prepare Upload...";
+
+                                   var title = Console.Title;
 
                                    Progress<FtpProgress> progress = new(p =>
                                    {
                                        mainTask.Description = "Upload " + p.RemotePath;
                                        mainTask.Value = p.Progress;
+                                       Console.Title = (int)(p.Progress) + " %";
                                        try
                                        {
                                            if ((int)p.Progress == 100)
@@ -540,6 +545,7 @@ namespace FtpCmdline
                                            logger.LogError(ex);
                                        }
                                    });
+                                   Console.Title = title;
 
                                    if (Directory.Exists(localPathValue))
                                    {
@@ -581,12 +587,14 @@ namespace FtpCmdline
                                                        mainTask.Description = TrimPad("Create Folder " + toCreate, 60);
                                                        await client.CreateDirectory(toCreate, context.GetCancellationToken());
                                                        mainTask.Increment(progressValue);
+                                                       Console.Title = ((int)(mainTask.Value)).ToString() + " %";
                                                        logger.LogInfo("Create folder " + toCreate);
                                                    }
                                                    else
                                                    {
                                                        mainTask.Description = TrimPad("Folder exists " + toCreate, 60);
                                                        mainTask.Increment(progressValue);
+                                                       Console.Title = ((int)(mainTask.Value)).ToString() + " %";
                                                        logger.LogInfo("Folder exists " + toCreate);
                                                    }
                                                }
@@ -611,11 +619,11 @@ namespace FtpCmdline
                                            }
                                            directoryCreated++;
                                        }
+                                       Console.Title = title;
                                        await client.Disconnect();
                                        client.Dispose();
 
                                        allFiles = local.Item2.Count;
-                                       currentFile = 1;
                                        if (parallelTaskValue > 1 && allFiles > 20)
                                        {
                                            var countPerTask = allFiles / parallelTaskValue;
@@ -642,7 +650,7 @@ namespace FtpCmdline
 
                                            var overallTask = ctx.AddTask(TrimPad("Overall", 60));
                                            var tempTitle = Console.Title;
-                                           var refreshOverall = () =>
+                                           void refreshOverall()
                                            {
                                                try
                                                {
@@ -654,14 +662,14 @@ namespace FtpCmdline
                                                    if (overallProgress > double.MinValue)
                                                    {
                                                        overallTask.Value = overallProgress;
-                                                       Console.Title = overallProgress.ToString() + "%";
+                                                       Console.Title = ((int)overallProgress).ToString() + " %";
                                                    }
                                                }
                                                catch (Exception ex)
                                                {
                                                    logger.LogError(ex);
                                                }
-                                           };
+                                           }
                                            overallTask.StartTask();
                                            for (var i = 0; i < listOfList.Count; i++)
                                            {
@@ -744,6 +752,7 @@ namespace FtpCmdline
                                        else
                                        {
                                            logger.LogVerbose("Single threaded upload");
+                                           int i = 0;
                                            foreach (var f in local.Item2.OrderBy(o => o.Length).ToList())
                                            {
                                                var toCopy = pathValue ?? "";
@@ -768,6 +777,7 @@ namespace FtpCmdline
                                                                            FtpRemoteExists.Skip,
                                                                            true, FtpVerify.None,
                                                                            progress, context.GetCancellationToken());
+                                                   Console.Title = ((int)(currentFile * 100.0 / allFiles)).ToString() + " %";
                                                    logger.LogInfo("Uploaded file " + toCopy);
                                                }
                                                catch (Exception ex)
@@ -793,6 +803,7 @@ namespace FtpCmdline
                                                fileUpload++;
                                            }
                                        }
+                                       Console.Title = title;
                                        logger.StopInProgress();
                                        logger.LogInfo("Directory uploaded (" + directoryCreated + " directories and " + fileUpload + " files)");
                                        context.ExitCode = 0;
@@ -852,11 +863,10 @@ namespace FtpCmdline
 
                                    ctx.Status = "Prepare Upload...";
                                    var title = Console.Title;
-
                                    Progress<FtpProgress> progress = new(p =>
                                    {
                                        ctx.Status("Upload " + currentFile + " of " + allFiles + " (" + p.TransferSpeedToString() + ") " + p.RemotePath + " " + (int)p.Progress + "%");
-                                       Console.Title = (int)p.Progress + "%";
+                                       Console.Title = (int)(p.Progress) + " %";
                                        try
                                        {
                                            if ((int)p.Progress == 100)
@@ -1035,7 +1045,7 @@ namespace FtpCmdline
                                        ctx.Status("Download " + (p.FileIndex + 1) + " of " + p.FileCount + " (" + p.TransferSpeedToString() + ") " + p.LocalPath + " " + (int)p.Progress + "%");
                                        try
                                        {
-                                           Console.Title = (int)p.Progress + "%";
+                                           Console.Title = (int)(p.Progress) + "%";
                                            if ((int)p.Progress == 100)
                                            {
                                                logger.LogInfo("Upload " + p.RemotePath);
@@ -1170,7 +1180,7 @@ namespace FtpCmdline
 
                                                var overallTask = ctx.AddTask(TrimPad("Overall", 60));
                                                var tempTitle = Console.Title;
-                                               var refreshOverall = () =>
+                                               void refreshOverall()
                                                {
                                                    try
                                                    {
@@ -1182,14 +1192,14 @@ namespace FtpCmdline
                                                        if (overallProgress > double.MinValue)
                                                        {
                                                            overallTask.Value = overallProgress;
-                                                           Console.Title = overallProgress.ToString() + "%";
+                                                           Console.Title = ((int)overallProgress).ToString() + " %";
                                                        }
                                                    }
                                                    catch (Exception ex)
                                                    {
                                                        logger.LogError(ex);
                                                    }
-                                               };
+                                               }
                                                overallTask.StartTask();
                                                for (var i = 0; i < listOfList.Count; i++)
                                                {
@@ -1346,6 +1356,7 @@ namespace FtpCmdline
                                   var index = 1;
                                   var files = items.Where(w => w.Type == FtpObjectType.File).OrderByDescending(o => o.FullName.Length).ToList();
                                   var deleted = 0;
+                                  var tempTitle = Console.Title;
                                   if (files != null)
                                   {
                                       logger.LogVerbose(files.Count + " files to delete");
@@ -1363,6 +1374,7 @@ namespace FtpCmdline
                                               logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteFile(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete file " + item.FullName + " (" + index + " of " + files.Count + ")");
+                                              Console.Title = ((int)(index * 100.0 / files.Count)).ToString() + " %";
                                               logger.LogInfo("Delete " + item.FullName + " (" + index + " of " + files.Count + ")");
                                               index++;
                                               deleted++;
@@ -1380,6 +1392,7 @@ namespace FtpCmdline
                                               logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteFile(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete file " + item.FullName + " (" + index + " of " + files.Count + ")");
+                                              Console.Title = ((int)(index * 100.0 / files.Count)).ToString() + " %";
                                               logger.LogInfo("Delete " + item.FullName + " (" + index + " of " + files.Count + ")");
                                               index++;
                                               deleted++;
@@ -1411,6 +1424,7 @@ namespace FtpCmdline
                                               logger.LogVerbose("Try to delete " + item.FullName);
                                               await client.DeleteDirectory(item.FullName, context.GetCancellationToken());
                                               ctx.Status("Delete directory " + item.FullName + " (" + index + " of " + directories.Count + ")");
+                                              Console.Title = ((int)(index * 100.0 / directories.Count)).ToString() + " %";
                                               logger.LogInfo("Delete directory " + item.FullName + " (" + index + " of " + directories.Count + ")");
                                               index++;
                                               deleted++;
@@ -1443,6 +1457,7 @@ namespace FtpCmdline
                                   }
                                   logger.StopInProgress();
                                   logger.LogInfo("Delete " + deleted + " of " + items.Count() + " items");
+                                  Console.Title = tempTitle;
                                   await client.Disconnect();
                                   client.Dispose();
                               }
@@ -1454,7 +1469,7 @@ namespace FtpCmdline
                           });
                       });
         }
-        #endregion
+#endregion
 
         /// <summary>
         /// main entry point
@@ -1594,3 +1609,5 @@ namespace FtpCmdline
         }
     }
 }
+
+#pragma warning restore CA1416 // Validate platform compatibility
