@@ -752,7 +752,6 @@ namespace FtpCmdline
                                        else
                                        {
                                            logger.LogVerbose("Single threaded upload");
-                                           int i = 0;
                                            foreach (var f in local.Item2.OrderBy(o => o.Length).ToList())
                                            {
                                                var toCopy = pathValue ?? "";
