@@ -1,4 +1,4 @@
-### [FtpCmdline](FtpCmdline.md 'FtpCmdline')
+### [CmdlineBase](CmdlineBase.md 'CmdlineBase')
 
 ## TimestampHelper Class
 
@@ -15,12 +15,12 @@ Implements [System.IDisposable](https://docs.microsoft.com/en-us/dotnet/api/Syst
 
 | Constructors | |
 | :--- | :--- |
-| [TimestampHelper(Logger)](TimestampHelper.TimestampHelper(Logger).md 'FtpCmdline.TimestampHelper.TimestampHelper(FtpCmdline.Logger)') | constructor |
+| [TimestampHelper(LoggerBase)](TimestampHelper.TimestampHelper(LoggerBase).md 'CmdlineBase.TimestampHelper.TimestampHelper(CmdlineBase.LoggerBase)') | constructor |
 
 | Properties | |
 | :--- | :--- |
-| [Logger](TimestampHelper.Logger.md 'FtpCmdline.TimestampHelper.Logger') | logger |
+| [Logger](TimestampHelper.Logger.md 'CmdlineBase.TimestampHelper.Logger') | logger |
 
 | Methods | |
 | :--- | :--- |
-| [Dispose()](TimestampHelper.Dispose().md 'FtpCmdline.TimestampHelper.Dispose()') | stops the timer and output duration |
+| [Dispose()](TimestampHelper.Dispose().md 'CmdlineBase.TimestampHelper.Dispose()') | stops the timer and output duration |

@@ -5,5 +5,5 @@
 set no in progress
 
 ```csharp
-public void StopInProgress();
+public override void StopInProgress();
 ```

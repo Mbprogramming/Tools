@@ -1,4 +1,4 @@
-﻿namespace FtpCmdline
+﻿namespace CmdlineBase
 {
     /// <summary>
     /// Log Level for FluentFTP Logging in output file

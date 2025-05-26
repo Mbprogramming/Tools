@@ -1,4 +1,4 @@
-### [FtpCmdline](FtpCmdline.md 'FtpCmdline')
+### [CmdlineBase](CmdlineBase.md 'CmdlineBase')
 
 ## LogLevel Enum
 
@@ -9,31 +9,31 @@ public enum LogLevel
 ```
 ### Fields
 
-<a name='FtpCmdline.LogLevel.Error'></a>
+<a name='CmdlineBase.LogLevel.Error'></a>
 
 `Error` 1
 
 log only errors
 
-<a name='FtpCmdline.LogLevel.Info'></a>
+<a name='CmdlineBase.LogLevel.Info'></a>
 
 `Info` 3
 
 log infos, warnings and errors
 
-<a name='FtpCmdline.LogLevel.None'></a>
+<a name='CmdlineBase.LogLevel.None'></a>
 
 `None` 0
 
 No logging
 
-<a name='FtpCmdline.LogLevel.Verbose'></a>
+<a name='CmdlineBase.LogLevel.Verbose'></a>
 
 `Verbose` 4
 
 log all
 
-<a name='FtpCmdline.LogLevel.Warn'></a>
+<a name='CmdlineBase.LogLevel.Warn'></a>
 
 `Warn` 2
 
